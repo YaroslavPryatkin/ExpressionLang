@@ -11,8 +11,7 @@ I didn't use clever pointers, since they didn't work with my AST node structure.
 
 This calculator currently has no = operator (You can write definitions like a=5 and f(x,y) = x + y, but not if(x > 0, x = 0, x = x) ). May be I will add it in the future, it shouldn't be hard.
 
-Here is the "help" text from the calculator.exe
-
+``` "help" text from calculator.exe
 Available commands:
   exit - Close the program
   var  - Print all variables
@@ -59,4 +58,4 @@ Available commands:
       For example: name_1, name_1_a and name__a are all valid, but name1, name_a or name__1 are not.
   Functions can not have the same names as variables or vice versa.
 ------------------------------------------------------------------------------------------------------------------------
-
+```
