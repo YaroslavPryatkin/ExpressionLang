@@ -11,7 +11,8 @@ I didn't use clever pointers, since they didn't work with my AST node structure.
 
 This calculator currently has no = operator (You can write definitions like a=5 and f(x,y) = x + y, but not if(x > 0, x = 0, x = x) ). May be I will add it in the future, it shouldn't be hard.
 
-``` "help" text from calculator.exe
+Here is the "help" text from calculator.exe
+``` 
 Available commands:
   exit - Close the program
   var  - Print all variables
