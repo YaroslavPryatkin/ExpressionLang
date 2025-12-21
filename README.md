@@ -15,18 +15,31 @@ Here is the "help" text from the calculator.exe
 
 Available commands:
   exit - Close the program
+  
   var  - Print all variables
+  
   sys  - Print all system (predefined) functions
+  
   fnc  - Print all user-defined functions
+  
   dpc  - Print all user-defined function dependencies
+  
   dpd  - Print all user-defined function dependants (functions, that depend on this function)
+  
   dpv  - Print all variable dependants (functions, that depend on this variable)
+  
   set  - Create or update a variable
+  
   dlf  - Delete a user-defined function
+
   dlr  - Delete a user-defined function and recursively all its dependants
+  
   dlv  - Delete a specific variable
+
   clr  - Delete all variables and user functions
+  
   help/man - Show this information
+  
   Any other input will be calculated
 
   You can write an input if the form of:
