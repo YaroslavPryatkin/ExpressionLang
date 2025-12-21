@@ -4,7 +4,7 @@ CoolCalculator is a console-based calculator and expression language that suppor
 user-defined variables, user-defined functions, recursion, references, and
 sequential execution.
 
-Although it looks like a calculator, it behaves more like a small interpreted
+Although it started as a calculator, now it is more like a small interpreted
 language with expression-based syntax. The goal of this project is to explore
 parsing, expression evaluation, and language design rather than numerical
 performance.
