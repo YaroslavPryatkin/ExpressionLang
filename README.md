@@ -28,7 +28,7 @@ Available commands:
   clr  - Delete all variables and user functions
   help/man - Show this information
   Any other input will be calculated
-------------------------------------------------------------------------------------------------------------------------
+:::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
   You can write an input if the form of:
       1) variableName_1 = variableName_2 = expression
               Expression will be calculated, result will be shown on the screen and written into the variables
@@ -37,25 +37,25 @@ Available commands:
               Expression will be stored in the function. Recursion and overloading is allowed.
       3) expression
               Expression will be calculated, result will be shown on the screen.
-------------------------------------------------------------------------------------------------------------------------
+:::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
   Note, that it is the last name which defines whether it's a function or a variable,
       For example: name_1(arg_1, arg_2) = name_2 = expression will be considered as a definition of 2 variables.
-------------------------------------------------------------------------------------------------------------------------
+
   If you enter into the expression any name, that have no definition, you will be asked to provide it's value.
       Also it will be stored as a variable.
-------------------------------------------------------------------------------------------------------------------------
+:::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
   Variables always store some value. However, if you make a function with zero arguments, you may use it as a variable.
   You dont need to put the argument for one-argument function into paranthesis: sin cos x will work.
       That may lead to confusion: what will "f x" and "f(x)" be parsed into, if f can be bouth zero- and one-argument?
       By default f is assumed to be zero-argument. But with paranthesis, parser will try to find one-argument variant.
       Also, if f was chosen to be one-argument, all functions on the left of f will be considered as one argument
       f_1 f_2 f_3 x == f_1 * f_2 * f_3 * x; f_1 f_2 f_3(x) == f_1(f_2(f_3(x))); f_1 f_2(f_3 x) == f_1(f_2(f_3 * x))
-------------------------------------------------------------------------------------------------------------------------
+:::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
   Note, that it is the last name which defines whether it's a function or a variable,
       For example: name_1(arg_1, arg_2) = name_2 = expression will be considered as a definition of 2 variables.
-------------------------------------------------------------------------------------------------------------------------
+:::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
   Names for functions and variables may include letters and ' symbol.
       Also they may include a number, if it is isolated by _ symbol.
       For example: name_1, name_1_a and name__a are all valid, but name1, name_a or name__1 are not.
   Functions can not have the same names as variables or vice versa.
-------------------------------------------------------------------------------------------------------------------------
+:::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
