@@ -8,6 +8,27 @@ namespace CalculatorNamespace {
 
 	std::string Calculator::parse(std::string input) {
 
+		if (input == "stop") {
+			savedInput = "";
+			return "Error: stopped\n";
+		}
+
+		//trim right
+		auto pos = input.find_last_not_of(" \t\n\r\f\v");
+		if (pos != std::string::npos)
+			input.erase(pos + 1);
+		else
+			return "";
+
+		if (input.back() == ';' || input.back() == ',') {
+			savedInput += input;
+			return std::string("");
+		}
+		else {
+			input = savedInput + input;
+			savedInput = "";
+		}
+
 		Tokenized tokenized = tokenizer.parse(input, base);
 		int amountOfNames = tokenized.names.size();
 
@@ -63,22 +84,22 @@ namespace CalculatorNamespace {
 								Node* header = base.findUserDefinedFunction(name, amountOfArgs)->header;
 								rpnToTree.parseIntoExisting(rpn, amountOfArgs, header);
 								base.changeUserDefinedFunction(name, tokenizer.makeExpression(tokenized, i), amountOfArgs, dependencies, variableDependencies);
-								result += std::string("Function ") + name + " was succesfully changed\n";
+								result += std::string("Function ") + name + " was succesfully changed\n\n";
 							}
 							catch (const std::exception& e) {
-								result += std::string(e.what()) + "\n";
+								result += std::string(e.what()) + "\n\n";
 							}
 						}
-						else result += std::string("Function ") + name + " was skipped";
+						else result += std::string("Function ") + name + " was skipped\n\n";
 					}
 					else {
 						Node* newHeader = rpnToTree.parse(rpn, amountOfArgs);
 						try {
 							base.addUserDefinedFunction(name, tokenizer.makeExpression(tokenized, i), newHeader, amountOfArgs, dependencies, variableDependencies);
-							result += std::string("Function ") + name + " was succesfully written\n";
+							result += std::string("Function ") + name + " was succesfully written\n\n";
 						}
 						catch (const std::exception& e) {
-							result += std::string(e.what()) + "\n";
+							result += std::string(e.what()) + "\n\n";
 						}
 					}
 				}
@@ -101,7 +122,7 @@ namespace CalculatorNamespace {
 			header->destroyFunction();//dont need any more. Since it was just created, no dependants
 			for (int i = 0; i < amountOfNames; i++)
 				base.changeOrSetVariable(tokenized.names[i], value);
-			return std::to_string(value);
+			return std::to_string(value) + "\n\n";
 		}
 	}
 }

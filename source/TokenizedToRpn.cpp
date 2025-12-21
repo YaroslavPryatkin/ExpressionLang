@@ -9,6 +9,11 @@ namespace CalculatorNamespace {
 	TokenizedToRpn::TokenizedToRpn() : currentFix(Fix::prefix), base(nullptr), names(nullptr), args(nullptr), amountOfArgs(0) {}
 
 
+	inline bool TokenizedToRpn::isAssign(const std::string& name)
+	{
+		return name == "=" || name == "++" || name == "--" || name == "+=" || name == "-=" || name == "*=" || name == "/=" || name == "^=";
+	}
+
 	inline bool TokenizedToRpn::isRecursion(const std::string& name, int amountOfArgsuments)
 	{
 #ifdef DEBUG
@@ -67,7 +72,9 @@ namespace CalculatorNamespace {
 #endif
 			rpn.push_back(rpnToken()); // recursion only if amount of args is correct and not 0. Else try to find overload
 		}
-		else rpn.push_back(base->makeRpnTokenFromFunction(token.name, token.fix, dependencies, token.amountOfArgs));
+		else {
+			rpn.push_back(base->makeRpnTokenFromFunction(token.name, token.fix, dependencies, token.amountOfArgs));
+		}
 	}
 
 	bool TokenizedToRpn::tryOperation(const std::string& name, Fix fix) {
@@ -145,11 +152,14 @@ namespace CalculatorNamespace {
 		}
 	}
 
-	bool TokenizedToRpn::tryRecurion(const std::string& name) {
+	bool TokenizedToRpn::tryRecurion(const std::string& name, const std::string& next) {
 		if (names->find(name) == names->end()) return false; //didnt found
 #ifdef DEBUG
 		std::cout << "recursion was tried" << std::endl;
 #endif
+		if (isAssign(next))
+			throw std::runtime_error("Assigning value to the non-variable");
+
 		if (currentFix != Fix::prefix)
 			tryOperation(base->implicitOperationName, Fix::infix);
 
@@ -269,31 +279,46 @@ namespace CalculatorNamespace {
 		currentFix = Fix::postfix; //after closing paranthesis, next must be postfix. Implicit multiplication will be handled automaticly on the next token
 	}
 
-	void TokenizedToRpn::parseVariable(const std::string& name) {
+	void TokenizedToRpn::parseVariable(const std::string& name, const std::string& next) {
 		if (args->find(name) != args->end()) rpn.push_back(rpnToken(args->at(name))); //it is a parameter
-		else rpn.push_back(base->makeRpnTokenFromVariable(name, variableDependencies));
+		else if(next == "=") rpn.push_back(base->makeRpnTokenFromVariable(name, variableDependencies, false)); // pushing without asking the value, since it will be evaluated at the runtime
+		else  rpn.push_back(base->makeRpnTokenFromVariable(name, variableDependencies, true)); // if needed, ask about the value
 	}
 
-	void TokenizedToRpn::parseNumberOrVariable(const std::string& name) {
+	void TokenizedToRpn::parseNumberOrVariable(const std::string& name, const std::string& next) {
 		//situations like (number1)postfix number2 or number1 number2, need implicit default operator before number2
 		if (currentFix == Fix::postfix)
 			tryOperation(base->implicitOperationName, Fix::infix);
 
 		currentFix = Fix::postfix;// after number or variable, must be postfix
 
+		float value;
+		size_t pos;
+		bool mayBeNumber = true;
 		try {
-			float value;
-			size_t pos;
 			value = std::stof(name, &pos);
-
-
-			if (pos == name.size()) rpn.push_back(rpnToken(value));	//if everything is ok, then it is a constant number
-			else parseVariable(name); // it is something like 12.4abc
 		}
 		catch (...) {
 			//if didnt manage to transform into a number, then it must be variable
-			parseVariable(name);
+			mayBeNumber = false;
+			parseVariable(name, next);
 		}
+
+#ifdef DEBUG
+		std::cout << pos << " " << name.size() << " pos and name.size()" << std::endl;
+#endif
+		if (mayBeNumber) {
+			if (pos == name.size()) {
+				if (isAssign(next))
+					throw std::runtime_error("Assigning value to the non-variable");
+#ifdef DEBUG
+				std::cout << "passed the check" << std::endl;
+#endif
+				rpn.push_back(rpnToken(value));	//if everything is ok, then it is a constant number
+			}
+			else throw std::runtime_error("Number ends with string");
+		}
+
  
 		parseRowOfZeroFunctions();
 
@@ -352,19 +377,30 @@ namespace CalculatorNamespace {
 #ifdef DEBUG
 			std::cout << "Considering input token: " << input[i] << ", current fix == " << (currentFix == Fix::prefix ? "prefix" : (currentFix == Fix::infix ? "infix" : "postfix")) << std::endl;
 #endif
+			std::string cur = input[i];
+			std::string next;
+			if (i != input.size() - 1)
+				next = input[i + 1];
+			else 
+				next = "";
 
-			if (input[i].size() == 1 && input[i][0] == ',') parseComma();
-			else if (input[i].size() == 1 && input[i][0] == '(') parseOpeningParanthesis();
-			else if (input[i].size() == 1 && input[i][0] == ')') parseClosingParanthesis();
-			else if (!tryRecurion(const_cast<std::string&>(input[i]))) { // if tryRecurtion returned false, should try already defined functions and variables
-				if (base->isFunction(input[i])) {
-					std::string temp = input[i];
-					parseOperation(temp);
+			if (cur == ",") {
+				parseComma();
+			}
+			else if (cur == "(") {
+				parseOpeningParanthesis();
+			}
+			else if (cur == ")") {
+				if (isAssign(next))
+					throw std::runtime_error("Assigning value to the non-variable"); // preventing (1+2)++
+				parseClosingParanthesis();
+			}
+			else if (!tryRecurion(cur, next)) { // if tryRecurtion returned false, should try already defined functions and variables
+				if (base->isFunction(cur)) {
+					parseOperation(cur);
 				}
-				else {
-					std::string temp = input[i];
-					parseNumberOrVariable(temp);
-				}
+				else
+					parseNumberOrVariable(cur, next); // passing next input to check for =, becouse in such case you dont need to enter the value of the new variable
 			}
 		}
 		parseEnding();

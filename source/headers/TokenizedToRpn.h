@@ -46,18 +46,20 @@ namespace CalculatorNamespace {
 		static const std::set<std::string> GLOBAL_EMPTY_SET;
 		//shunting yard algorythm. A little bigger then on wikipedia
 
+		inline bool isAssign(const std::string& name);
 		inline bool isRecursion(const std::string& name, int amountOfArgs);
+
 		inline void parseRowOfZeroFunctions();
 		void prepareFields();
 		void popOperationToRpn();
 		bool tryOperation(const std::string& name, Fix fix);
 		void parseOperation(const std::string& name);
-		bool tryRecurion(const std::string& name);
+		bool tryRecurion(const std::string& name, const std::string& next);
 		void parseComma();
 		void parseOpeningParanthesis();
 		void parseClosingParanthesis();
-		void parseVariable(const std::string& name);
-		void parseNumberOrVariable(const std::string& name);
+		void parseVariable(const std::string& name, const std::string& next);
+		void parseNumberOrVariable(const std::string& name, const std::string& next);
 		void parseEnding();
 
 	public:

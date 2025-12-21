@@ -69,7 +69,7 @@ namespace CalculatorNamespace {
 
 		for (int i = 0; i < rpn.size(); i++) {
 			rpnToken cur = rpn[i];
-			if (cur.isNumber) nodeStack.push(new Node(cur.value)); // constant number
+			if (cur.isNumber) nodeStack.push(new Node(cur.value, NodeType::constant)); // constant number
 			else {
 				if (cur.header == nullptr) {
 					if (cur.intValue == -1 && amountOfArgs > 0)
@@ -111,7 +111,7 @@ namespace CalculatorNamespace {
 
 		for (int i = 0; i < rpn.size(); i++) {
 			rpnToken cur = rpn[i];
-			if (cur.isNumber) nodeStack.push(new Node(cur.value)); // constant number
+			if (cur.isNumber) nodeStack.push(new Node(cur.value, NodeType::constant)); // constant number
 			else {
 				if (cur.header == nullptr) {
 					if (cur.intValue == -1 && amountOfArgs > 0)

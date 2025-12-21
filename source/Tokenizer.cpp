@@ -38,20 +38,14 @@ namespace CalculatorNamespace {
 
         // dividing name_1=name_2=expressing into {name_1, name_2}
         for (;;) {
-            size_t eqpos = input.find('=');
+            size_t eqpos = input.find(":=");
             if (eqpos == std::string::npos) break;
 
             if (eqpos == 0 || eqpos == input.size() - 1)
                 throw std::runtime_error("Wrong left side of the input");
 
-            // to not mistake with >=, <=, !=, ==, =>
-            if ((input[eqpos - 1] == '!' || input[eqpos - 1] == '<' || input[eqpos - 1] == '>' ||
-                input[eqpos + 1] == '=' || input[eqpos + 1] == '>')) {
-                break;
-            }
-
             beforeEq.push_back(input.substr(0, eqpos));
-            input = input.substr(eqpos + 1);
+            input = input.substr(eqpos + 2);
         }
 
         // allows name_1=name_2(arg_1, arg_2) = expression.
@@ -66,9 +60,13 @@ namespace CalculatorNamespace {
             answer.names.push_back(readString(beforeEq[i], localPos));
             skipWhiteSpaces(beforeEq[i], localPos);
 
-            if (localPos == beforeEq[i].size()) continue;
+            if (localPos == beforeEq[i].size()) {//it is a variable
+                answer.args.clear();
+                continue;
+            }
 
-            if (beforeEq[i][localPos] != '(') throw std::runtime_error("Wrong naming (several names inside one [ = ... = ]: " + beforeEq[i]);
+
+            if (beforeEq[i][localPos] != '(') throw std::runtime_error("Wrong naming (several names inside one [ = ... = ]) : " + beforeEq[i]);
             answer.isFunction = true;
             localPos++;
 

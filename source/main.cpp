@@ -11,15 +11,17 @@ cl.exe /EHsc /std:c++17 /I source source\*.cpp /Fo"build\\" /Fe:calculator.exe /
 int main() {
     const int consoleWidth = 120;
     const std::string separator(consoleWidth, '-');
+
     CalculatorNamespace::Calculator calc(std::cin, std::cout, consoleWidth);
+
     std::string line;
 
     std::cout << "--- Yaroslav Calculator Loaded ---" << std::endl;
-    std::cout << "Type 'help' or 'man' for a list of commands." << std::endl;
+    std::cout << "Type 'help' for a list of commands, 'man' for a manual." << std::endl;
 
     while (true) {
         try {
-            std::cout << "\n> ";
+            std::cout << "> ";
             if (!std::getline(std::cin, line)) break;
 
             if (line == "exit") {
@@ -58,8 +60,9 @@ int main() {
             else if (line == "clr") {
                 calc.base.clear();
             }
-            else if (line == "help" || line == "man") {
-                std::cout << "Available commands:\n"
+            else if (line == "help") {
+                std::cout << calc.base.makeTitle("Available commands", consoleWidth, ':') << "\n" << separator << "\n"
+                    << "Available commands:\n"
                     << "  exit - Close the program\n"
                     << "  var  - Print all variables\n"
                     << "  sys  - Print all system (predefined) functions\n"
@@ -72,44 +75,83 @@ int main() {
                     << "  dlr  - Delete a user-defined function and recursively all its dependants\n"
                     << "  dlv  - Delete a specific variable\n"
                     << "  clr  - Delete all variables and user functions\n"
-                    << "  help/man - Show this information\n"
-                    << "  Any other input will be calculated\n" << separator << "\n"
-                    << "  You can write an input if the form of:\n"
-                    << "      1) variableName_1 = variableName_2 = expression\n"
-                    << "              Expression will be calculated, result will be shown on the screen and written into the variables\n"
-                    << "              If variables don't exist, they will be created.\n"
-                    << "      2) functionName_1 = functionName_2 ( argName_1, argName_2) = expression\n"
-                    << "              Expression will be stored in the function. Recursion and overloading is allowed.\n"
+                    << "  man - Show user manual\n"
+                    << "  help - Show this information\n"
+                    << "  Any other input will be calculated\n" << separator << "\n" << std::endl;
+            }
+            else if(line == "man") {
+                std::cout << calc.base.makeTitle("User manual", consoleWidth, ':') << "\n"
+                    << separator << "\n"
+                    << "  You can enter input in one of the following forms:\n"
+                    << "      1) variableName_1 := variableName_2 := expression\n"
+                    << "              Expression will be calculated, its result will be shown and\n"
+                    << "              written into all listed variables. If variables do not exist,\n"
+                    << "              they will be created automatically.\n"
+                    << "      2) functionName_1 := functionName_2(argName_1, argName_2) := expression\n"
+                    << "              Expression will be stored as a user-defined function.\n"
+                    << "              Recursion and overloading are supported.\n"
                     << "      3) expression\n"
-                    << "              Expression will be calculated, result will be shown on the screen.\n" << separator << "\n"
-                    << "  Note, that it is the last name which defines whether it's a function or a variable,\n"
-                    << "      For example: name_1(arg_1, arg_2) = name_2 = expression will be considered as a definition of 2 variables.\n" << separator << "\n"
-                    << "  If you enter into the expression any name, that have no definition, you will be asked to provide it's value.\n"
-                    << "      Also it will be stored as a variable.\n" << separator << "\n"
-                    << "  Variables always store some value. However, if you make a function with zero arguments, you may use it as a variable.\n"
-                    << "  You dont need to put the argument for one-argument function into paranthesis: sin cos x will work.\n"
-                    << "      That may lead to confusion: what will \"f x\" and \"f(x)\" be parsed into, if f can be bouth zero- and one-argument?\n"
-                    << "      By default f is assumed to be zero-argument. But with paranthesis, parser will try to find one-argument variant.\n"
-                    << "      Also, if f was chosen to be one-argument, all functions on the left of f will be considered as one argument \n"
-                    << "      f_1 f_2 f_3 x == f_1 * f_2 * f_3 * x; f_1 f_2 f_3(x) == f_1(f_2(f_3(x))); f_1 f_2(f_3 x) == f_1(f_2(f_3 * x)) \n" << separator << "\n"
-                    << "  Note, that it is the last name which defines whether it's a function or a variable,\n"
-                    << "      For example: name_1(arg_1, arg_2) = name_2 = expression will be considered as a definition of 2 variables.\n" << separator << "\n"
-                    << "  Names for functions and variables may include letters and \' symbol.\n"
-                    << "      Also they may include a number, if it is isolated by _ symbol.\n"
-                    << "      For example: name_1, name_1_a and name__a are all valid, but name1, name_a or name__1 are not.\n"
-                    << "  Functions can not have the same names as variables or vice versa.\n" << separator << "\n" 
-                    << "  Have a nice day!" << std::endl;
+                    << "              Expression will be calculated and its result will be shown.\n"
+                    << separator << "\n"
+                    << "  Note: the last name in a definition determines whether it is a function or\n"
+                    << "        a variable and if it is a function, determines an amount of arguments.\n" 
+                    << "        For example : \n"
+                    << "            name_1(arg_1, arg_2) := name_2 := expression\n"
+                    << "        will be treated as a definition of two variables.\n"
+                    << separator << "\n"
+                    << "  If an expression contains a name that has no definition yet, the calculator\n"
+                    << "  will ask you to provide its value and then store it as a variable.\n"
+                    << "  However, if a variable is first encountered on the left side of '=', its\n"
+                    << "  value will NOT be requested and it will be automatically created with value 0,\n"
+                    << "  since it will be immediately overwritten.\n"
+                    << separator << "\n"
+                    << "  Variables always store some value. Functions with zero arguments may be used\n"
+                    << "  as variables, but they are still evaluated at runtime.\n"
+                    << "  For one-argument functions, parentheses around the argument are optional:\n"
+                    << "      sin cos x  is valid input.\n"
+                    << "  This may lead to ambiguity when a function has both zero- and one-argument\n"
+                    << "  overloads.\n"
+                    << "      By default, such functions are assumed to be zero-argument.\n"
+                    << "      Using parentheses makes one-argument interpretation default\n"
+                    << "      for this function and all functions to the left.\n"
+                    << "      Examples:\n"
+                    << "          f_1 f_2 f_3 x        == f_1 * f_2 * f_3 * x\n"
+                    << "          f_1 f_2 f_3(x)       == f_1(f_2(f_3(x)))\n"
+                    << "          f_1 f_2(f_3 x)       == f_1(f_2(f_3 * x))\n"
+                    << separator << "\n"
+                    << "  Function arguments are passed by reference.\n"
+                    << "  This means that assigning a new value to a function argument will modify the\n"
+                    << "  variable that was passed into the function.\n"
+                    << separator << "\n"
+                    << "  The ';' operator allows sequential execution of expressions.\n"
+                    << "      left ; right\n"
+                    << "  First, the left expression is evaluated, then the right one.\n"
+                    << "  The result of the entire expression is the result of the right side.\n"
+                    << "  This allows writing full programs as a single expression.\n"
+                    << "  The last expression not followed by ';' becomes the returned result.\n"
+                    << separator << "\n"
+                    << "  If the input ends with ',' or ';', it will not be evaluated immediately.\n"
+                    << "  Instead, it will be stored and waiting for continuation on the next line.\n"
+                    << "  This allows writing programs across multiple input lines.\n"
+                    << separator << "\n"
+                    << "  Names for functions and variables may contain letters and the '\'' symbol.\n"
+                    << "  They may also contain numbers if separated by '_' characters.\n"
+                    << "      Valid names:   name_1, name_1_a, name__a\n"
+                    << "      Invalid names: name1, name_a, name__1\n"
+                    << "  Functions and variables may not share the same name.\n"
+                    << separator << "\n" << std::endl;
+
             }
             else if (line.empty()) {
                 continue;
             }
             else {
                 std::string result = calc.parse(line);
-                std::cout << "Result: " << result << std::endl;
+                std::cout << result;
             }
         }
         catch (const std::exception& e) {
-            std::cerr << "Error: " << e.what() << std::endl;
+            std::cerr << "Error: " << e.what() << "\n" <<  std::endl;
 
             if (std::cin.fail()) {
                 std::cin.clear();

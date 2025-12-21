@@ -17,7 +17,7 @@ namespace CalculatorNamespace {
 
 		Calculator(std::istream& in = std::cin, std::ostream& out = std::cout, int consoleWidth = 80);
 
-		//void changeStreams(std::istream& in = std::cin, std::ostream& out = std::cout);
+		std::string savedInput;
 
 		std::string parse(std::string input);
 	};

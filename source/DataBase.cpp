@@ -40,7 +40,7 @@ namespace CalculatorNamespace {
 	
 	Variable::Variable() : name(""), header(nullptr) {}
 
-	Variable::Variable(std::string name, float value) : name(name), header(new Node(value)) {}
+	Variable::Variable(std::string name, float value) : name(name), header(new Node(value, NodeType::variable)) {}
 
 	Variable::Variable(Variable&& other) noexcept
 		: header(other.header), name(std::move(other.name)) {
@@ -83,12 +83,379 @@ namespace CalculatorNamespace {
 					)
 				}
 			},
-			{"+", {
+			{"=", {
+					new PreDefinedFunction("=", "a=1", "Assigning the value to the variable, return the assigned value", 2, Fix::infix, 9, true,
+									[](Node* self) {
+							if (self->params[0] == nullptr || self->params[1] == nullptr)
+								throw std::runtime_error("No parameter was passed to the function");
+
+							Node* zeroParam = self->params[0];
+
+							if (zeroParam->getType() == NodeType::common && zeroParam->associated->getType() == NodeType::variable) {
+								float res = self->params[1]->evaluate();
+								zeroParam->associated->set(res);
+
+								return res;
+							}
+
+							if (zeroParam->getType() == NodeType::input){
+								Node* headerParam = zeroParam->associated->params[zeroParam->getParameterIndex()];
+								if (headerParam != nullptr && headerParam->getType() == NodeType::common && headerParam->associated->getType() == NodeType::variable) {
+									float res = self->params[1]->evaluate();
+									headerParam->associated->set(res);
+
+									return res;
+								}
+							}
+							throw std::runtime_error("Trying to assign a value to the non-variable");
+						}
+					)
+				}
+			},
+			{"+=", {
+					new PreDefinedFunction("+=", "a+=b", "a = a + b", 2, Fix::infix, 9, true,
+									[](Node* self) {
+							if (self->params[0] == nullptr || self->params[1] == nullptr)
+								throw std::runtime_error("No parameter was passed to the function");
+
+							Node* zeroParam = self->params[0];
+
+							if (zeroParam->getType() == NodeType::common && zeroParam->associated->getType() == NodeType::variable) {
+								float resRight = self->params[1]->evaluate();
+								float resLeft = zeroParam->associated->evaluate();
+								zeroParam->associated->set(resLeft + resRight);
+
+								return resLeft + resRight;
+							}
+
+							if (zeroParam->getType() == NodeType::input) {
+								Node* headerParam = zeroParam->associated->params[zeroParam->getParameterIndex()];
+								if (headerParam != nullptr && headerParam->getType() == NodeType::common && headerParam->associated->getType() == NodeType::variable) {
+									float resRight = self->params[1]->evaluate();
+									float resLeft = headerParam->associated->evaluate();
+									headerParam->associated->set(resLeft + resRight);
+
+									return resLeft + resRight;
+								}
+							}
+							throw std::runtime_error("Trying to assign a value to the non-variable");
+						}
+					)
+				}
+			},
+			{"-=", {
+					new PreDefinedFunction("-=", "a-=b", "a = a - b", 2, Fix::infix, 9, true,
+									[](Node* self) {
+							if (self->params[0] == nullptr || self->params[1] == nullptr)
+								throw std::runtime_error("No parameter was passed to the function");
+
+							Node* zeroParam = self->params[0];
+
+							if (zeroParam->getType() == NodeType::common && zeroParam->associated->getType() == NodeType::variable) {
+								float resRight = self->params[1]->evaluate();
+								float resLeft = zeroParam->associated->evaluate();
+								zeroParam->associated->set(resLeft - resRight);
+
+								return resLeft - resRight;
+							}
+
+							if (zeroParam->getType() == NodeType::input) {
+								Node* headerParam = zeroParam->associated->params[zeroParam->getParameterIndex()];
+								if (headerParam != nullptr && headerParam->getType() == NodeType::common && headerParam->associated->getType() == NodeType::variable) {
+									float resRight = self->params[1]->evaluate();
+									float resLeft = headerParam->associated->evaluate();
+									headerParam->associated->set(resLeft - resRight);
+
+									return resLeft - resRight;
+								}
+							}
+							throw std::runtime_error("Trying to assign a value to the non-variable");
+						}
+					)
+				}
+			},
+			{ "*=", {
+				new PreDefinedFunction("*=", "a*=b", "a = a * b", 2, Fix::infix, 9, true,
+					[](Node* self) {
+						if (!self->params[0] || !self->params[1])
+							throw std::runtime_error("No parameter was passed to the function");
+
+						Node* zeroParam = self->params[0];
+
+						if (zeroParam->getType() == NodeType::common && zeroParam->associated->getType() == NodeType::variable) {
+							float resRight = self->params[1]->evaluate();
+							float resLeft = zeroParam->associated->evaluate();
+							zeroParam->associated->set(resLeft * resRight);
+
+							return resLeft * resRight;
+						}
+
+						if (zeroParam->getType() == NodeType::input) {
+							Node* headerParam = zeroParam->associated->params[zeroParam->getParameterIndex()];
+							if (headerParam && headerParam->getType() == NodeType::common && headerParam->associated->getType() == NodeType::variable) {
+								float resRight = self->params[1]->evaluate();
+								float resLeft = headerParam->associated->evaluate();
+								headerParam->associated->set(resLeft * resRight);
+
+								return resLeft * resRight;
+							}
+						}
+
+						throw std::runtime_error("Trying to assign a value to the non-variable");
+					}
+				)
+			} },
+
+			{ "/=", {
+				new PreDefinedFunction("/=", "a/=b", "a = a / b", 2, Fix::infix, 9, true,
+					[](Node* self) {
+						if (!self->params[0] || !self->params[1])
+							throw std::runtime_error("No parameter was passed to the function");
+
+						Node* zeroParam = self->params[0];
+
+						if (zeroParam->getType() == NodeType::common && zeroParam->associated->getType() == NodeType::variable) {
+							float resRight = self->params[1]->evaluate();
+							if (resRight == 0.0f)
+								throw std::runtime_error("Division by zero");
+
+							float resLeft = zeroParam->associated->evaluate();
+							zeroParam->associated->set(resLeft / resRight);
+
+							return resLeft / resRight;
+						}
+
+						if (zeroParam->getType() == NodeType::input) {
+							Node* headerParam = zeroParam->associated->params[zeroParam->getParameterIndex()];
+							if (headerParam && headerParam->getType() == NodeType::common && headerParam->associated->getType() == NodeType::variable) {
+								float resRight = self->params[1]->evaluate();
+								if (resRight == 0.0f)
+									throw std::runtime_error("Division by zero");
+
+								float resLeft = headerParam->associated->evaluate();
+								headerParam->associated->set(resLeft / resRight);
+
+								return resLeft / resRight;
+							}
+						}
+
+						throw std::runtime_error("Trying to assign a value to the non-variable");
+					}
+				)
+			} },
+
+			{ "^=", {
+				new PreDefinedFunction("^=", "a^=b", "a = a ^ b", 2, Fix::infix, 9, true,
+					[](Node* self) {
+						if (!self->params[0] || !self->params[1])
+							throw std::runtime_error("No parameter was passed to the function");
+
+						Node* zeroParam = self->params[0];
+
+						if (zeroParam->getType() == NodeType::common && zeroParam->associated->getType() == NodeType::variable) {
+							float resRight = self->params[1]->evaluate();
+							float resLeft = zeroParam->associated->evaluate();
+							zeroParam->associated->set(std::pow(resLeft, resRight));
+
+							return std::pow(resLeft, resRight);
+						}
+
+						if (zeroParam->getType() == NodeType::input) {
+							Node* headerParam = zeroParam->associated->params[zeroParam->getParameterIndex()];
+							if (headerParam && headerParam->getType() == NodeType::common && headerParam->associated->getType() == NodeType::variable) {
+								float resRight = self->params[1]->evaluate();
+								float resLeft = headerParam->associated->evaluate();
+								headerParam->associated->set(std::pow(resLeft, resRight));
+
+								return std::pow(resLeft, resRight);
+							}
+						}
+
+						throw std::runtime_error("Trying to assign a value to the non-variable");
+					}
+				)
+			} 
+			},
+			{ "++", {
+					new PreDefinedFunction("++", "++a", "Increment variable (prefix)", 1, Fix::prefix, defaultPrefixFunctionPrecedence, false,
+						[](Node* self) {
+							if (!self->params[0])
+								throw std::runtime_error("No parameter passed to ++");
+
+							Node* varNode = self->params[0];
+
+							if (varNode->getType() == NodeType::common && varNode->associated->getType() == NodeType::variable) {
+								float val = varNode->associated->evaluate() + 1.0f;
+								varNode->associated->set(val);
+								return val;
+							}
+
+							if (varNode->getType() == NodeType::input) {
+								Node* headerParam = varNode->associated->params[varNode->getParameterIndex()];
+								if (!headerParam || headerParam->getType() != NodeType::common || headerParam->associated->getType() != NodeType::variable)
+									throw std::runtime_error("Trying to increment a non-variable");
+
+								float val = headerParam->associated->evaluate() + 1.0f;
+								headerParam->associated->set(val);
+								return val;
+							}
+
+							throw std::runtime_error("Trying to increment a non-variable");
+						}
+					),
+					new PreDefinedFunction("++", "a++", "Increment variable (postfix)", 1, Fix::postfix, defaultPrefixFunctionPrecedence, false,
+						[](Node* self) {
+							if (!self->params[0])
+								throw std::runtime_error("No parameter passed to ++");
+
+							Node* varNode = self->params[0];
+							float oldVal;
+
+							if (varNode->getType() == NodeType::common && varNode->associated->getType() == NodeType::variable) {
+								oldVal = varNode->associated->evaluate();
+								varNode->associated->set(oldVal + 1.0f);
+								return oldVal;
+							}
+
+							if (varNode->getType() == NodeType::input) {
+								Node* headerParam = varNode->associated->params[varNode->getParameterIndex()];
+								if (!headerParam || headerParam->getType() != NodeType::common || headerParam->associated->getType() != NodeType::variable)
+									throw std::runtime_error("Trying to increment a non-variable");
+
+								oldVal = headerParam->associated->evaluate();
+								headerParam->associated->set(oldVal + 1.0f);
+								return oldVal;
+							}
+
+							throw std::runtime_error("Trying to increment a non-variable");
+						}
+					)
+				}
+			},
+			{ "--", {
+					new PreDefinedFunction("--", "--a", "Decrement variable (prefix)", 1, Fix::prefix, defaultPrefixFunctionPrecedence, false,
+						[](Node* self) {
+							if (!self->params[0])
+								throw std::runtime_error("No parameter passed to --");
+
+							Node* varNode = self->params[0];
+
+							if (varNode->getType() == NodeType::common && varNode->associated->getType() == NodeType::variable) {
+								float val = varNode->associated->evaluate() - 1.0f;
+								varNode->associated->set(val);
+								return val;
+							}
+
+							if (varNode->getType() == NodeType::input) {
+								Node* headerParam = varNode->associated->params[varNode->getParameterIndex()];
+								if (!headerParam || headerParam->getType() != NodeType::common || headerParam->associated->getType() != NodeType::variable)
+									throw std::runtime_error("Trying to decrement a non-variable");
+
+								float val = headerParam->associated->evaluate() - 1.0f;
+								headerParam->associated->set(val);
+								return val;
+							}
+
+							throw std::runtime_error("Trying to decrement a non-variable");
+						}
+					),
+					new PreDefinedFunction("--", "a--", "Decrement variable (postfix)", 1, Fix::postfix, defaultPrefixFunctionPrecedence, false,
+						[](Node* self) {
+							if (!self->params[0])
+								throw std::runtime_error("No parameter passed to --");
+
+							Node* varNode = self->params[0];
+							float oldVal;
+
+							if (varNode->getType() == NodeType::common && varNode->associated->getType() == NodeType::variable) {
+								oldVal = varNode->associated->evaluate();
+								varNode->associated->set(oldVal - 1.0f);
+								return oldVal;
+							}
+
+							if (varNode->getType() == NodeType::input) {
+								Node* headerParam = varNode->associated->params[varNode->getParameterIndex()];
+								if (!headerParam || headerParam->getType() != NodeType::common || headerParam->associated->getType() != NodeType::variable)
+									throw std::runtime_error("Trying to decrement a non-variable");
+
+								oldVal = headerParam->associated->evaluate();
+								headerParam->associated->set(oldVal - 1.0f);
+								return oldVal;
+							}
+
+							throw std::runtime_error("Trying to decrement a non-variable");
+						}
+					)
+				} 
+			},
+			{";", {
+					new PreDefinedFunction(";", "code; code", "Evaluates both sides, returns right-size result", 2, Fix::infix, 8, false,
+									[](Node* self) {
+							if (self->params[0] == nullptr || self->params[1] == nullptr)
+								throw std::runtime_error("No parameter was passed to the function");
+
+							self->params[0]->evaluate();
+							return self->params[1]->evaluate();
+						}
+					)
+				}
+			},
+			{"while", {
+					new PreDefinedFunction("while", "while(condition, code)", "while cond != 0.0f do code, returns amount of cicles", 2, Fix::prefix, defaultPrefixFunctionPrecedence, false,
+									[](Node* self) {
+							if (self->params[0] == nullptr || self->params[1] == nullptr)
+								throw std::runtime_error("No parameter was passed to the function");
+
+							float amountOfCicles = 0.0f;
+							while (self->params[0]->evaluate() != 0.0f) {
+								self->params[1]->evaluate();
+								amountOfCicles++;
+							}
+							return amountOfCicles;
+						}
+					)
+				}
+			},
+			{"for", {
+					new PreDefinedFunction("for", "for(start, condition, code)", "Equals to: start; while( condition, code)", 3, Fix::prefix, defaultPrefixFunctionPrecedence, false,
+									[](Node* self) {
+							if (self->params[0] == nullptr || self->params[1] == nullptr || self->params[2] == nullptr)
+								throw std::runtime_error("No parameter was passed to the function");
+
+							self->params[0]->evaluate();
+							float amountOfCicles = 0.0f;
+							while (self->params[1]->evaluate() != 0.0f) {
+								self->params[2]->evaluate();
+								amountOfCicles++;
+							}
+							return amountOfCicles;
+						}
+					),
+					new PreDefinedFunction("for", "for(start, condition, iter, code)", "Equals to: start; while( condition, code; iter)", 4, Fix::prefix, defaultPrefixFunctionPrecedence, false,
+									[](Node* self) {
+							if (self->params[0] == nullptr || self->params[1] == nullptr || self->params[2] == nullptr || self->params[3] == nullptr)
+								throw std::runtime_error("No parameter was passed to the function");
+
+							self->params[0]->evaluate();
+							float amountOfCicles = 0.0f;
+							while (self->params[1]->evaluate() != 0.0f) {
+								self->params[3]->evaluate();
+								self->params[2]->evaluate();
+								amountOfCicles++;
+							}
+							return amountOfCicles;
+						}
+					)
+				}
+			},
+			{ "+", {
 					new PreDefinedFunction("+", "a+b", "Just addition", 2, Fix::infix, 50, false,
 									[](Node* self) {
 							if (self->params[0] == nullptr || self->params[1] == nullptr)
 								throw std::runtime_error("No parameter was passed to the function");
-							return self->params[0]->evaluate() + self->params[1]->evaluate();
+							float left = self->params[0]->evaluate();
+							float right = self->params[1]->evaluate();
+							return left + right;
 						}
 					)
 				}
@@ -98,7 +465,9 @@ namespace CalculatorNamespace {
 									[](Node* self) {
 							if (self->params[0] == nullptr || self->params[1] == nullptr)
 								throw std::runtime_error("No parameter was passed to the function");
-							return self->params[0]->evaluate() - self->params[1]->evaluate();
+							float left = self->params[0]->evaluate();
+							float right = self->params[1]->evaluate();
+							return left - right;
 						}
 					),
 						new PreDefinedFunction("-1", "-a", "Unary minus", 1, Fix::prefix, 80, false,
@@ -115,7 +484,9 @@ namespace CalculatorNamespace {
 									[](Node* self) {
 							if (self->params[0] == nullptr || self->params[1] == nullptr)
 								throw std::runtime_error("No parameter was passed to the function");
-							return self->params[0]->evaluate() * self->params[1]->evaluate();
+							float left = self->params[0]->evaluate();
+							float right = self->params[1]->evaluate();
+							return left * right;
 						}
 					)
 				}
@@ -125,7 +496,9 @@ namespace CalculatorNamespace {
 									[](Node* self) {
 							if (self->params[0] == nullptr || self->params[1] == nullptr)
 								throw std::runtime_error("No parameter was passed to the function");
-							return self->params[0]->evaluate() / self->params[1]->evaluate();
+							float left = self->params[0]->evaluate();
+							float right = self->params[1]->evaluate();
+							return left / right;
 						}
 					)
 				}
@@ -135,7 +508,9 @@ namespace CalculatorNamespace {
 									[](Node* self) {
 							if (self->params[0] == nullptr || self->params[1] == nullptr)
 								throw std::runtime_error("No parameter was passed to the function");
-							return static_cast<float>(std::pow(self->params[0]->evaluate(), self->params[1]->evaluate()));
+							float left = self->params[0]->evaluate();
+							float right = self->params[1]->evaluate();
+							return static_cast<float>(std::pow(left, right));
 						}
 					)
 				}
@@ -429,10 +804,11 @@ namespace CalculatorNamespace {
 		return variables.find(name) != variables.end();
 	}
 
-	rpnToken DataBase::makeRpnTokenFromVariable(std::string name, std::set<Variable*>& variableDependancies) {
+	rpnToken DataBase::makeRpnTokenFromVariable(const std::string& name, std::set<Variable*>& variableDependancies, bool shouldAsk) {
 		Variable* var;
 		if (variables.find(name) != variables.end())  var = variables[name];
-		else var = askForAVariable(name);
+		else if (shouldAsk) var = askForAVariable(name);
+		else var = changeOrSetVariable(name, 0.0f);
 		variableDependancies.insert(var);
 		return rpnToken(var->header);
 	}
@@ -518,12 +894,29 @@ namespace CalculatorNamespace {
 
 
 	const rpnToken DataBase::makeRpnTokenFromFunction(std::string name, Fix fix, std::set<UserDefinedFunction*>& dependencies ,int amountOfArguments) {
-		if (fix == Fix::infix) amountOfArguments = 2; //infix operators alweys have 2 parameters
-		if (fix == Fix::postfix) amountOfArguments = -1; // can be any since I currently can not control the amount
 		if (preDefined.find(name) != preDefined.end()) {
-			for (auto& fnc : preDefined[name]) {
-				if (fnc->fix == fix && (fnc->amountOfArguments == amountOfArguments || fnc->amountOfArguments == -1)) // -1 means there can be any amount of arguments, works only for predefined functions
-					return rpnToken(fnc->header, amountOfArguments);
+			if (fix == Fix::infix) {
+				for (auto& fnc : preDefined[name]) {
+					if (fnc->fix == Fix::infix) {
+						if (fnc->amountOfArguments == 2)
+							return rpnToken(fnc->header, 2);
+					}
+				}
+			}
+			if (fix == Fix::postfix) {
+				for (auto& fnc : preDefined[name]) {
+					if (fnc->fix == Fix::postfix) {
+						return rpnToken(fnc->header, fnc->amountOfArguments); // there is currently no control over amount of args for postfix functions, so anything will do
+					}
+				}
+			}
+			if (fix == Fix::prefix) {
+				for (auto& fnc : preDefined[name]) {
+					if (fnc->fix == Fix::prefix) {
+						if (fnc->amountOfArguments == amountOfArguments || amountOfArguments == -1) // -1 means any amount of argument, works only for predefined prefix functions
+							return rpnToken(fnc->header, fnc->amountOfArguments);
+					}
+				}
 			}
 		}
 		if (fix == Fix::prefix && userDefined.find(name) != userDefined.end()) {

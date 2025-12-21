@@ -74,7 +74,7 @@ namespace CalculatorNamespace {
         const bool isVariable(std::string name);
 
 
-        rpnToken makeRpnTokenFromVariable(std::string name, std::set<Variable*>& variableDependancies);
+        rpnToken makeRpnTokenFromVariable(const std::string& name, std::set<Variable*>& variableDependancies, bool shouldAsk = true);
 
         const std::pair<int, bool> functionInfo(std::string name, Fix fix);
 
