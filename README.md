@@ -46,8 +46,8 @@ whether such an approach would support the required zero- and one-argument logic
 Using RPN also simplifies debugging and future extensions.
 
 Smart pointers were not used, as they did not fit well with the chosen AST node structure. 
-Instead, a custom dependency tracking system is used to safely manage object lifetimes 
-and allow recursive deletion of dependent entities.
+Instead, a custom dependency tracking system is used to safely manage function dependencies 
+and allow recursive deletion of dependent functions.
 
 ---
 
@@ -55,12 +55,12 @@ and allow recursive deletion of dependent entities.
 ## User Manual
 
 Basic Input Forms 
-  - 1) variableName_1 := variableName_2 := expression
+  - 1) `variableName_1 := variableName_2 := expression`
        Calculates expression, shows result, and writes it into all listed variables.
        If variables do not exist, they will be created automatically.
-  - 2) functionName_1 := functionName_2(arg1, arg2) := expression
+  - 2) `functionName_1 := functionName_2(arg1, arg2) := expression`
        Expression will be stored as a user-defined function. Recursion and overloading are supported.
-  - 3) expression
+  - 3) `expression`
        Expression will be calculated and its result will be shown immediately.
 
 Definition Rules
@@ -120,4 +120,4 @@ Complex Example
   amountOfCalls += 1;
   res
 ```
-  - Returns sum 1 to `x`, adds loop count to `y`, and increments global `amountOfCalls`.
+  - Returns sum `1` to `x`, adds loop count to `y`, and increments global `amountOfCalls`.
