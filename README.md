@@ -54,7 +54,8 @@ and allow recursive deletion of dependent entities.
 
 ## User Manual
 
--------------------------------------------------- Basic Input Forms ---------------------------------------------------
+Basic Input Forms 
+```
   - 1) variableName_1 := variableName_2 := expression
        Calculates expression, shows result, and writes it into all listed variables.
        If variables do not exist, they will be created automatically.
@@ -62,21 +63,29 @@ and allow recursive deletion of dependent entities.
        Expression will be stored as a user-defined function. Recursion and overloading are supported.
   - 3) expression
        Expression will be calculated and its result will be shown immediately.
---------------------------------------------------- Definition Rules ---------------------------------------------------
+```
+Definition Rules
+ ```
   - Note: The last name in a definition determines whether it is a function or a variable.
   - If it is a function, the last name determines the amount of arguments.
   - Example: 'name_1(arg_1, arg_2) := name_2 := expression' will be treated as two variables.
-------------------------------------------------- Undefined Variables --------------------------------------------------
+```
+Undefined Variables
+ ```
   - If an expression contains an unknown name, the calculator will ask you to provide its value.
   - If a variable is first encountered on the left side of '=', its value will NOT be requested.
   - Such variables are automatically created with value 0, as they are immediately overwritten.
---------------------------------------------------- Local Variables ----------------------------------------------------
+```
+Local Variables
+ ```
   - Use 'local' to declare a variable: 'local a = 5'. New local variables are initialized with 0.0f.
   - Technical note: 'local a += 5' is possible, but it is not recommended.
   - Local variables shadow global ones and cannot share names with functions or parameters.
   - Use 'endlocal' to remove a variable from the current scope.
   - Example: local a=5; a+=1; endlocal a=7; a*=10; (Writes 6 to local 'a', 70 to global 'a').
------------------------------------------------------- Functions -------------------------------------------------------
+```
+Functions
+```
   - In existing functions, all arguments are passed by reference.
   - For one-argument functions, parentheses are optional: 'sin cos x' is valid.
   - Functions with both 0 and 1-arg overloads are assumed to be 0-arg by default.
@@ -84,24 +93,32 @@ and allow recursive deletion of dependent entities.
       1) f_1 f_2 f_3 x    == f_1 * f_2 * f_3 * x
       2) f_1 f_2 f_3(x)   == f_1(f_2(f_3(x)))
       3) f_1 f_2(f_3 x)   == f_1(f_2(f_3 * x))
------------------------------------------------------- Recursion -------------------------------------------------------
+```
+Recursion
+```
   - In recursion: variables (global, local, or refs) are passed by reference.
   - In recursion: expressions (like x-1) are calculated and passed by value.
   - Logic: passing 'x-1' by reference to 'x' would cause an immediate infinite loop.
   - Passing variables by reference allows modifying values at any recursion level.
   - WARNING: The parser does not check for infinite recursion. Use with caution!
------------------------------------------------ Execution and Multi-line -----------------------------------------------
+```
+Execution and Multi-line
+```
   - Use ';' for sequential execution. The result is the value of the right-side expression.
   - The last expression not followed by ';' becomes the returned result.
   - Input continues if a line ends with: ';', ',', '(', '+', '-', '*', '/', '^', '=', or '\'.
   - If a line ends with '\', the character is removed and input continues.
   - Type 'stop' to terminate input and cancel evaluation.
--------------------------------------------------- Naming Constraints --------------------------------------------------
+```
+Naming Constraints
+```
   - Names may contain letters and the ''' symbol.
   - Numbers are allowed only if separated by underscores: 'name_1', 'name__a'.
   - Invalid names: 'name1', 'name_a', 'name__1'.
   - Functions and variables may not share the same name.
---------------------------------------------------- Complex Example ----------------------------------------------------
+```
+Complex Example
+```
   f(x, y) :=
   local res = 0;
   y +=
@@ -111,4 +128,4 @@ and allow recursive deletion of dependent entities.
   amountOfCalls += 1;
   res
   - Returns sum 1 to x, adds loop count to y, and increments global 'amountOfCalls'.
-------------------------------------------------------------------------------------------------------------------------
+```
