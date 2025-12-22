@@ -70,7 +70,7 @@ Definition Rules
 
 Undefined Variables
   - If an expression contains an unknown name, the calculator will ask you to provide its value.
-  - If a variable is first encountered on the left side of '=', its value will NOT be requested.
+  - If a variable is first encountered on the left side of `=`, its value will NOT be requested.
   - Such variables are automatically created with value 0, as they are immediately overwritten.
 
 Local Variables
@@ -78,16 +78,16 @@ Local Variables
   - Technical note: 'local a += 5' is possible, but it is not recommended.
   - Local variables shadow global ones and cannot share names with functions or parameters.
   - Use 'endlocal' to remove a variable from the current scope.
-  - Example: local a=5; a+=1; endlocal a=7; a*=10; (Writes 6 to local 'a', 70 to global 'a').
+  - Example: `local a=5; a+=1; endlocal a=7; a*=10;` (Writes 6 to local `a`, 70 to global `a`).
 
 Functions
   - In existing functions, all arguments are passed by reference.
   - For one-argument functions, parentheses are optional: 'sin cos x' is valid.
   - Functions with both 0 and 1-arg overloads are assumed to be 0-arg by default.
   - Using parentheses forces 1-argument interpretation for that function and all to its left:
-      1) f_1 f_2 f_3 x    == f_1 * f_2 * f_3 * x
-      2) f_1 f_2 f_3(x)   == f_1(f_2(f_3(x)))
-      3) f_1 f_2(f_3 x)   == f_1(f_2(f_3 * x))
+      1) `f_1 f_2 f_3 x`    == `f_1 * f_2 * f_3 * x`
+      2) `f_1 f_2 f_3(x)`   == `f_1(f_2(f_3(x)))`
+      3) `f_1 f_2(f_3 x)`   == `f_1(f_2(f_3 * x))`
 
 Recursion
   - In recursion: variables (global, local, or refs) are passed by reference.
@@ -97,16 +97,16 @@ Recursion
   - WARNING: The parser does not check for infinite recursion. Use with caution!
 
 Execution and Multi-line
-  - Use ';' for sequential execution. The result is the value of the right-side expression.
-  - The last expression not followed by ';' becomes the returned result.
-  - Input continues if a line ends with: ';', ',', '(', '+', '-', '*', '/', '^', '=', or '\'.
-  - If a line ends with '\', the character is removed and input continues.
+  - Use `;` for sequential execution. The result is the value of the right-side expression.
+  - The last expression not followed by `;` becomes the returned result.
+  - Input continues if a line ends with: `;`, `,`, `(`, `+`, `-`, `*`, `/`, `^`, `=` or `\` .
+  - If a line ends with `\`, the character is removed and input continues.
   - Type 'stop' to terminate input and cancel evaluation.
 
 Naming Constraints
-  - Names may contain letters and the ''' symbol.
-  - Numbers are allowed only if separated by underscores: 'name_1', 'name__a'.
-  - Invalid names: 'name1', 'name_a', 'name__1'.
+  - Names may contain letters and the `'` symbol.
+  - Numbers are allowed only if separated by underscores: `name_1`, `name__a`.
+  - Invalid names: `name1`, `name_a`, `name__1`.
   - Functions and variables may not share the same name.
 
 Complex Example
@@ -120,4 +120,4 @@ Complex Example
   amountOfCalls += 1;
   res
 ```
-  - Returns sum 1 to x, adds loop count to y, and increments global 'amountOfCalls'.
+  - Returns sum 1 to `x`, adds loop count to `y`, and increments global `amountOfCalls`.
