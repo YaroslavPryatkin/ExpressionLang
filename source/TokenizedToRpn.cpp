@@ -9,6 +9,23 @@ namespace CalculatorNamespace {
 	TokenizedToRpn::TokenizedToRpn() : currentFix(Fix::prefix), base(nullptr), names(nullptr), args(nullptr), amountOfArgs(0) {}
 
 
+	inline bool TokenizedToRpn::isAmongLocalFields(const std::string& name) {
+		return localVariables.find(name) != localVariables.end() || names->find(name) != names->end() || args->find(name) != args->end();
+	}
+
+	bool TokenizedToRpn::isNumber(const std::string& name) {
+		float value;
+		size_t pos;
+		try {
+			value = std::stof(name, &pos);
+			return pos == name.size();
+		}
+		catch (...) {
+			//if didnt manage to transform into a number, then it must be variable
+			return false;
+		}
+	}
+
 	inline bool TokenizedToRpn::isAssign(const std::string& name)
 	{
 		return name == "=" || name == "++" || name == "--" || name == "+=" || name == "-=" || name == "*=" || name == "/=" || name == "^=";
@@ -20,6 +37,39 @@ namespace CalculatorNamespace {
 		std::cout << "Checking if recursion: names->find(name) != names->end() == " << (names->find(name) != names->end()) << " amountOfArgs != 0 == " << (amountOfArgs != 0) << " amountOfArgsuments == amountOfArgs == " << (amountOfArgsuments == amountOfArgs) << std::endl;
 #endif
 		return names->find(name) != names->end() && amountOfArgs != 0 && amountOfArgsuments == amountOfArgs;
+	}
+
+	bool TokenizedToRpn::tryKeyWord(const std::string& name, const std::string& next) {
+		if (name == "local") {
+			if (next == "")
+				throw std::runtime_error("No name was given to keyword \"local\"");
+			if (isNumber(next))
+				throw std::runtime_error("No variable name after the key word \"local\"");
+			if (base->isFunction(next))
+				throw std::runtime_error("Function name after the key word \"local\"");
+			if (isAmongLocalFields(next))
+				throw std::runtime_error(next + " can not be a local variable, since it is either already a local variable, or it is a parameter / new function name");
+			if (endedLocalVariables.find(next) != endedLocalVariables.end()) {
+				localVariables[next] = endedLocalVariables[next];
+			}
+			else {
+				localVariables[next] = amountOfLocals;
+				amountOfLocals++;
+			}
+
+			return true;
+		}
+		if (name == "endlocal") {
+			if (next == "")
+				throw std::runtime_error("No name was given to keyword \"endlocal\"");
+			if (localVariables.find(next) == localVariables.end())
+				throw std::runtime_error(std::string("Trying to end non-local variable ") + next);
+			endedLocalVariables[next] = localVariables[next];
+			localVariables.erase(next);
+			
+			return true;
+		}
+		return false; // didnt found
 	}
 
 	//pop all prefix functions to rpn. By default consider them as zero argument (aka just variables)
@@ -54,6 +104,9 @@ namespace CalculatorNamespace {
 		rpn.clear();
 		dependencies.clear();
 		variableDependencies.clear();
+		localVariables.clear();
+		endedLocalVariables.clear();
+		amountOfLocals = 0;
 		currentFix = Fix::prefix;
 	}
 
@@ -281,6 +334,7 @@ namespace CalculatorNamespace {
 
 	void TokenizedToRpn::parseVariable(const std::string& name, const std::string& next) {
 		if (args->find(name) != args->end()) rpn.push_back(rpnToken(args->at(name))); //it is a parameter
+		else if (localVariables.find(name) != localVariables.end()) rpn.push_back(rpnToken(amountOfArgs + localVariables.at(name))); // it is a local variable, which are stored in exectly like parameters
 		else if(next == "=") rpn.push_back(base->makeRpnTokenFromVariable(name, variableDependencies, false)); // pushing without asking the value, since it will be evaluated at the runtime
 		else  rpn.push_back(base->makeRpnTokenFromVariable(name, variableDependencies, true)); // if needed, ask about the value
 	}
@@ -299,20 +353,17 @@ namespace CalculatorNamespace {
 			value = std::stof(name, &pos);
 		}
 		catch (...) {
-			//if didnt manage to transform into a number, then it must be variable
+			//if didnt manage to transform into a number, then it must be variable, since variables dont start with numbers
 			mayBeNumber = false;
 			parseVariable(name, next);
 		}
 
-#ifdef DEBUG
-		std::cout << pos << " " << name.size() << " pos and name.size()" << std::endl;
-#endif
 		if (mayBeNumber) {
 			if (pos == name.size()) {
 				if (isAssign(next))
 					throw std::runtime_error("Assigning value to the non-variable");
 #ifdef DEBUG
-				std::cout << "passed the check" << std::endl;
+				std::cout << "found constant number " << value << std::endl;
 #endif
 				rpn.push_back(rpnToken(value));	//if everything is ok, then it is a constant number
 			}
@@ -354,8 +405,8 @@ namespace CalculatorNamespace {
 		}
 	}
 
-	std::tuple<std::vector<rpnToken>, std::set<UserDefinedFunction*>, std::set<Variable*>>
-		TokenizedToRpn::parse(const std::vector<std::string>& input, const DataBase& newBase, const std::set<std::string>& names, const std::unordered_map<std::string, int>& args) {
+	std::tuple<std::vector<rpnToken>, std::set<UserDefinedFunction*>, std::set<Variable*>, int>
+	TokenizedToRpn::parse(const std::vector<std::string>& input, const DataBase& newBase, const std::set<std::string>& names, const std::unordered_map<std::string, int>& args) {
 		prepareFields();
 		base = const_cast<DataBase*>(&newBase);
 		this->names = &names;
@@ -395,7 +446,7 @@ namespace CalculatorNamespace {
 					throw std::runtime_error("Assigning value to the non-variable"); // preventing (1+2)++
 				parseClosingParanthesis();
 			}
-			else if (!tryRecurion(cur, next)) { // if tryRecurtion returned false, should try already defined functions and variables
+			else if (!tryKeyWord(cur,next) && !tryRecurion(cur, next)) { // try key word, try recursion. If bouth returned false, try operation and variable
 				if (base->isFunction(cur)) {
 					parseOperation(cur);
 				}
@@ -404,6 +455,6 @@ namespace CalculatorNamespace {
 			}
 		}
 		parseEnding();
-		return std::make_tuple(rpn, dependencies, variableDependencies);
+		return std::make_tuple(rpn, dependencies, variableDependencies, amountOfLocals);
 	}
 }

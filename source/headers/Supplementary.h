@@ -24,6 +24,21 @@ namespace CalculatorNamespace {
         input // cant actually be in the field NodeType type; input node for parameter i is coded as type = -i - 1; must be the last on the list
     };
 
+#ifdef DEBUG
+    inline const char* toString(NodeType type) {
+        switch (type) {
+        case NodeType::preDefined: return "preDefined";
+        case NodeType::header:     return "header";
+        case NodeType::variable:   return "variable";
+        case NodeType::common:     return "common";
+        case NodeType::recursion:  return "recursion";
+        case NodeType::constant:   return "constant";
+        case NodeType::input:      return "input";
+        default:                   return "unknown NodeType";
+        }
+    }
+#endif
+
     class Node {
         int type;
     public:
@@ -34,19 +49,9 @@ namespace CalculatorNamespace {
 
 
         //header of user-defined function, should be created only with RPNToTree::createNewFunction method
-        Node(int amountOfArgs) : associated(nullptr), type(static_cast<int>(NodeType::header)), evaluate([this]() {
+        Node(int amountOfArgs, int amountOfLocal);
 
-#ifdef DEBUG
-            std::cout << "Evaluating header node" << std::endl;
-#endif
-            float res = this->associated->evaluate();
-#ifdef DEBUG
-            std::cout << "Finished evaluating header node with result = " << res << std::endl;
-#endif
-
-            return res; }) {
-            params.resize(amountOfArgs, nullptr);
-        }
+        void changeAmountOfLocals(int amountOfArgs, int newAmountOfLocals);
 
         //input node
         Node(Node* header, int argNumber) : associated(header), type(-argNumber-1), evaluate([this, argNumber]() {

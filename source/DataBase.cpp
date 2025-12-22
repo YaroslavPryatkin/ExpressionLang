@@ -90,8 +90,10 @@ namespace CalculatorNamespace {
 								throw std::runtime_error("No parameter was passed to the function");
 
 							Node* zeroParam = self->params[0];
-
-							if (zeroParam->getType() == NodeType::common && zeroParam->associated->getType() == NodeType::variable) {
+#ifdef DEBUG
+							std::cout << "zeroParam.getType() == " << toString(zeroParam->getType()) << std::endl;
+#endif
+							if (zeroParam->getType() == NodeType::common && zeroParam->associated->getType() == NodeType::variable) { // global variable
 								float res = self->params[1]->evaluate();
 								zeroParam->associated->set(res);
 
@@ -100,7 +102,27 @@ namespace CalculatorNamespace {
 
 							if (zeroParam->getType() == NodeType::input){
 								Node* headerParam = zeroParam->associated->params[zeroParam->getParameterIndex()];
-								if (headerParam != nullptr && headerParam->getType() == NodeType::common && headerParam->associated->getType() == NodeType::variable) {
+
+
+								if(headerParam == nullptr) 
+									throw std::runtime_error("Trying to assign a value to null pointer");
+
+#ifdef DEBUG
+								std::cout << "headerParam.getType() == " << toString(headerParam->getType()) << std::endl;
+#endif
+								if (headerParam->getType() == NodeType::variable) { // local variable
+									float res = self->params[1]->evaluate();
+									headerParam->set(res);
+
+									return res;
+								}
+
+#ifdef DEBUG
+								if(headerParam->getType() == NodeType::common)
+									std::cout << "headerParam->associated->getType() == " << toString(headerParam->associated->getType()) << std::endl;
+#endif
+
+								if (headerParam->getType() == NodeType::common && headerParam->associated->getType() == NodeType::variable) { // global variable passed as parameter
 									float res = self->params[1]->evaluate();
 									headerParam->associated->set(res);
 
@@ -119,8 +141,10 @@ namespace CalculatorNamespace {
 								throw std::runtime_error("No parameter was passed to the function");
 
 							Node* zeroParam = self->params[0];
-
-							if (zeroParam->getType() == NodeType::common && zeroParam->associated->getType() == NodeType::variable) {
+#ifdef DEBUG
+							std::cout << "zeroParam.getType() == " << toString(zeroParam->getType()) << std::endl;
+#endif
+							if (zeroParam->getType() == NodeType::common && zeroParam->associated->getType() == NodeType::variable) { // global variable
 								float resRight = self->params[1]->evaluate();
 								float resLeft = zeroParam->associated->evaluate();
 								zeroParam->associated->set(resLeft + resRight);
@@ -130,7 +154,28 @@ namespace CalculatorNamespace {
 
 							if (zeroParam->getType() == NodeType::input) {
 								Node* headerParam = zeroParam->associated->params[zeroParam->getParameterIndex()];
-								if (headerParam != nullptr && headerParam->getType() == NodeType::common && headerParam->associated->getType() == NodeType::variable) {
+
+
+								if (headerParam == nullptr)
+									throw std::runtime_error("Trying to assign a value to null pointer");
+
+#ifdef DEBUG
+								std::cout << "headerParam.getType() == " << toString(headerParam->getType()) << std::endl;
+#endif
+								if (headerParam->getType() == NodeType::variable) { // local variable
+									float resRight = self->params[1]->evaluate();
+									float resLeft = headerParam->evaluate();
+									headerParam->set(resLeft + resRight);
+
+									return resLeft + resRight;
+								}
+
+#ifdef DEBUG
+								if (headerParam->getType() == NodeType::common)
+									std::cout << "headerParam->associated->getType() == " << toString(headerParam->associated->getType()) << std::endl;
+#endif
+
+								if (headerParam->getType() == NodeType::common && headerParam->associated->getType() == NodeType::variable) { // global variable passed as parameter
 									float resRight = self->params[1]->evaluate();
 									float resLeft = headerParam->associated->evaluate();
 									headerParam->associated->set(resLeft + resRight);
@@ -150,8 +195,10 @@ namespace CalculatorNamespace {
 								throw std::runtime_error("No parameter was passed to the function");
 
 							Node* zeroParam = self->params[0];
-
-							if (zeroParam->getType() == NodeType::common && zeroParam->associated->getType() == NodeType::variable) {
+#ifdef DEBUG
+							std::cout << "zeroParam.getType() == " << toString(zeroParam->getType()) << std::endl;
+#endif
+							if (zeroParam->getType() == NodeType::common && zeroParam->associated->getType() == NodeType::variable) { // global variable
 								float resRight = self->params[1]->evaluate();
 								float resLeft = zeroParam->associated->evaluate();
 								zeroParam->associated->set(resLeft - resRight);
@@ -161,7 +208,28 @@ namespace CalculatorNamespace {
 
 							if (zeroParam->getType() == NodeType::input) {
 								Node* headerParam = zeroParam->associated->params[zeroParam->getParameterIndex()];
-								if (headerParam != nullptr && headerParam->getType() == NodeType::common && headerParam->associated->getType() == NodeType::variable) {
+
+
+								if (headerParam == nullptr)
+									throw std::runtime_error("Trying to assign a value to null pointer");
+
+#ifdef DEBUG
+								std::cout << "headerParam.getType() == " << toString(headerParam->getType()) << std::endl;
+#endif
+								if (headerParam->getType() == NodeType::variable) { // local variable
+									float resRight = self->params[1]->evaluate();
+									float resLeft = headerParam->evaluate();
+									headerParam->set(resLeft - resRight);
+
+									return resLeft - resRight;
+								}
+
+#ifdef DEBUG
+								if (headerParam->getType() == NodeType::common)
+									std::cout << "headerParam->associated->getType() == " << toString(headerParam->associated->getType()) << std::endl;
+#endif
+
+								if (headerParam->getType() == NodeType::common && headerParam->associated->getType() == NodeType::variable) { // global variable passed as parameter
 									float resRight = self->params[1]->evaluate();
 									float resLeft = headerParam->associated->evaluate();
 									headerParam->associated->set(resLeft - resRight);
@@ -177,31 +245,53 @@ namespace CalculatorNamespace {
 			{ "*=", {
 				new PreDefinedFunction("*=", "a*=b", "a = a * b", 2, Fix::infix, 9, true,
 					[](Node* self) {
-						if (!self->params[0] || !self->params[1])
-							throw std::runtime_error("No parameter was passed to the function");
+						if (self->params[0] == nullptr || self->params[1] == nullptr)
+								throw std::runtime_error("No parameter was passed to the function");
 
-						Node* zeroParam = self->params[0];
-
-						if (zeroParam->getType() == NodeType::common && zeroParam->associated->getType() == NodeType::variable) {
-							float resRight = self->params[1]->evaluate();
-							float resLeft = zeroParam->associated->evaluate();
-							zeroParam->associated->set(resLeft * resRight);
-
-							return resLeft * resRight;
-						}
-
-						if (zeroParam->getType() == NodeType::input) {
-							Node* headerParam = zeroParam->associated->params[zeroParam->getParameterIndex()];
-							if (headerParam && headerParam->getType() == NodeType::common && headerParam->associated->getType() == NodeType::variable) {
+							Node* zeroParam = self->params[0];
+#ifdef DEBUG
+							std::cout << "zeroParam.getType() == " << toString(zeroParam->getType()) << std::endl;
+#endif
+							if (zeroParam->getType() == NodeType::common && zeroParam->associated->getType() == NodeType::variable) { // global variable
 								float resRight = self->params[1]->evaluate();
-								float resLeft = headerParam->associated->evaluate();
-								headerParam->associated->set(resLeft * resRight);
+								float resLeft = zeroParam->associated->evaluate();
+								zeroParam->associated->set(resLeft * resRight);
 
 								return resLeft * resRight;
 							}
-						}
 
-						throw std::runtime_error("Trying to assign a value to the non-variable");
+							if (zeroParam->getType() == NodeType::input) {
+								Node* headerParam = zeroParam->associated->params[zeroParam->getParameterIndex()];
+
+
+								if (headerParam == nullptr)
+									throw std::runtime_error("Trying to assign a value to null pointer");
+
+#ifdef DEBUG
+								std::cout << "headerParam.getType() == " << toString(headerParam->getType()) << std::endl;
+#endif
+								if (headerParam->getType() == NodeType::variable) { // local variable
+									float resRight = self->params[1]->evaluate();
+									float resLeft = headerParam->evaluate();
+									headerParam->set(resLeft * resRight);
+
+									return resLeft * resRight;
+								}
+
+#ifdef DEBUG
+								if (headerParam->getType() == NodeType::common)
+									std::cout << "headerParam->associated->getType() == " << toString(headerParam->associated->getType()) << std::endl;
+#endif
+
+								if (headerParam->getType() == NodeType::common && headerParam->associated->getType() == NodeType::variable) { // global variable passed as parameter
+									float resRight = self->params[1]->evaluate();
+									float resLeft = headerParam->associated->evaluate();
+									headerParam->associated->set(resLeft * resRight);
+
+									return resLeft * resRight;
+								}
+							}
+							throw std::runtime_error("Trying to assign a value to the non-variable");
 					}
 				)
 			} },
@@ -209,37 +299,53 @@ namespace CalculatorNamespace {
 			{ "/=", {
 				new PreDefinedFunction("/=", "a/=b", "a = a / b", 2, Fix::infix, 9, true,
 					[](Node* self) {
-						if (!self->params[0] || !self->params[1])
-							throw std::runtime_error("No parameter was passed to the function");
+						if (self->params[0] == nullptr || self->params[1] == nullptr)
+								throw std::runtime_error("No parameter was passed to the function");
 
-						Node* zeroParam = self->params[0];
-
-						if (zeroParam->getType() == NodeType::common && zeroParam->associated->getType() == NodeType::variable) {
-							float resRight = self->params[1]->evaluate();
-							if (resRight == 0.0f)
-								throw std::runtime_error("Division by zero");
-
-							float resLeft = zeroParam->associated->evaluate();
-							zeroParam->associated->set(resLeft / resRight);
-
-							return resLeft / resRight;
-						}
-
-						if (zeroParam->getType() == NodeType::input) {
-							Node* headerParam = zeroParam->associated->params[zeroParam->getParameterIndex()];
-							if (headerParam && headerParam->getType() == NodeType::common && headerParam->associated->getType() == NodeType::variable) {
+							Node* zeroParam = self->params[0];
+#ifdef DEBUG
+							std::cout << "zeroParam.getType() == " << toString(zeroParam->getType()) << std::endl;
+#endif
+							if (zeroParam->getType() == NodeType::common && zeroParam->associated->getType() == NodeType::variable) { // global variable
 								float resRight = self->params[1]->evaluate();
-								if (resRight == 0.0f)
-									throw std::runtime_error("Division by zero");
-
-								float resLeft = headerParam->associated->evaluate();
-								headerParam->associated->set(resLeft / resRight);
+								float resLeft = zeroParam->associated->evaluate();
+								zeroParam->associated->set(resLeft / resRight);
 
 								return resLeft / resRight;
 							}
-						}
 
-						throw std::runtime_error("Trying to assign a value to the non-variable");
+							if (zeroParam->getType() == NodeType::input) {
+								Node* headerParam = zeroParam->associated->params[zeroParam->getParameterIndex()];
+
+
+								if (headerParam == nullptr)
+									throw std::runtime_error("Trying to assign a value to null pointer");
+
+#ifdef DEBUG
+								std::cout << "headerParam.getType() == " << toString(headerParam->getType()) << std::endl;
+#endif
+								if (headerParam->getType() == NodeType::variable) { // local variable
+									float resRight = self->params[1]->evaluate();
+									float resLeft = headerParam->evaluate();
+									headerParam->set(resLeft / resRight);
+
+									return resLeft / resRight;
+								}
+
+#ifdef DEBUG
+								if (headerParam->getType() == NodeType::common)
+									std::cout << "headerParam->associated->getType() == " << toString(headerParam->associated->getType()) << std::endl;
+#endif
+
+								if (headerParam->getType() == NodeType::common && headerParam->associated->getType() == NodeType::variable) { // global variable passed as parameter
+									float resRight = self->params[1]->evaluate();
+									float resLeft = headerParam->associated->evaluate();
+									headerParam->associated->set(resLeft / resRight);
+
+									return resLeft / resRight;
+								}
+							}
+							throw std::runtime_error("Trying to assign a value to the non-variable");
 					}
 				)
 			} },
@@ -247,31 +353,53 @@ namespace CalculatorNamespace {
 			{ "^=", {
 				new PreDefinedFunction("^=", "a^=b", "a = a ^ b", 2, Fix::infix, 9, true,
 					[](Node* self) {
-						if (!self->params[0] || !self->params[1])
-							throw std::runtime_error("No parameter was passed to the function");
+						if (self->params[0] == nullptr || self->params[1] == nullptr)
+								throw std::runtime_error("No parameter was passed to the function");
 
-						Node* zeroParam = self->params[0];
-
-						if (zeroParam->getType() == NodeType::common && zeroParam->associated->getType() == NodeType::variable) {
-							float resRight = self->params[1]->evaluate();
-							float resLeft = zeroParam->associated->evaluate();
-							zeroParam->associated->set(std::pow(resLeft, resRight));
-
-							return std::pow(resLeft, resRight);
-						}
-
-						if (zeroParam->getType() == NodeType::input) {
-							Node* headerParam = zeroParam->associated->params[zeroParam->getParameterIndex()];
-							if (headerParam && headerParam->getType() == NodeType::common && headerParam->associated->getType() == NodeType::variable) {
+							Node* zeroParam = self->params[0];
+#ifdef DEBUG
+							std::cout << "zeroParam.getType() == " << toString(zeroParam->getType()) << std::endl;
+#endif
+							if (zeroParam->getType() == NodeType::common && zeroParam->associated->getType() == NodeType::variable) { // global variable
 								float resRight = self->params[1]->evaluate();
-								float resLeft = headerParam->associated->evaluate();
-								headerParam->associated->set(std::pow(resLeft, resRight));
+								float resLeft = zeroParam->associated->evaluate();
+								zeroParam->associated->set(std::pow(resLeft, resRight));
 
 								return std::pow(resLeft, resRight);
 							}
-						}
 
-						throw std::runtime_error("Trying to assign a value to the non-variable");
+							if (zeroParam->getType() == NodeType::input) {
+								Node* headerParam = zeroParam->associated->params[zeroParam->getParameterIndex()];
+
+
+								if (headerParam == nullptr)
+									throw std::runtime_error("Trying to assign a value to null pointer");
+
+#ifdef DEBUG
+								std::cout << "headerParam.getType() == " << toString(headerParam->getType()) << std::endl;
+#endif
+								if (headerParam->getType() == NodeType::variable) { // local variable
+									float resRight = self->params[1]->evaluate();
+									float resLeft = headerParam->evaluate();
+									headerParam->set(std::pow(resLeft, resRight));
+
+									return std::pow(resLeft, resRight);
+								}
+
+#ifdef DEBUG
+								if (headerParam->getType() == NodeType::common)
+									std::cout << "headerParam->associated->getType() == " << toString(headerParam->associated->getType()) << std::endl;
+#endif
+
+								if (headerParam->getType() == NodeType::common && headerParam->associated->getType() == NodeType::variable) { // global variable passed as parameter
+									float resRight = self->params[1]->evaluate();
+									float resLeft = headerParam->associated->evaluate();
+									headerParam->associated->set(std::pow(resLeft, resRight));
+
+									return std::pow(resLeft, resRight);
+								}
+							}
+							throw std::runtime_error("Trying to assign a value to the non-variable");
 					}
 				)
 			} 
@@ -279,55 +407,98 @@ namespace CalculatorNamespace {
 			{ "++", {
 					new PreDefinedFunction("++", "++a", "Increment variable (prefix)", 1, Fix::prefix, defaultPrefixFunctionPrecedence, false,
 						[](Node* self) {
-							if (!self->params[0])
-								throw std::runtime_error("No parameter passed to ++");
+							if (self->params[0] == nullptr)
+								throw std::runtime_error("No parameter was passed to the function");
 
-							Node* varNode = self->params[0];
+							Node* zeroParam = self->params[0];
+#ifdef DEBUG
+							std::cout << "zeroParam.getType() == " << toString(zeroParam->getType()) << std::endl;
+#endif
+							if (zeroParam->getType() == NodeType::common && zeroParam->associated->getType() == NodeType::variable) { // global variable
+								float res = zeroParam->associated->evaluate() + 1.0f;
+								zeroParam->associated->set(res);
 
-							if (varNode->getType() == NodeType::common && varNode->associated->getType() == NodeType::variable) {
-								float val = varNode->associated->evaluate() + 1.0f;
-								varNode->associated->set(val);
-								return val;
+								return res;
 							}
 
-							if (varNode->getType() == NodeType::input) {
-								Node* headerParam = varNode->associated->params[varNode->getParameterIndex()];
-								if (!headerParam || headerParam->getType() != NodeType::common || headerParam->associated->getType() != NodeType::variable)
-									throw std::runtime_error("Trying to increment a non-variable");
+							if (zeroParam->getType() == NodeType::input) {
+								Node* headerParam = zeroParam->associated->params[zeroParam->getParameterIndex()];
 
-								float val = headerParam->associated->evaluate() + 1.0f;
-								headerParam->associated->set(val);
-								return val;
+
+								if (headerParam == nullptr)
+									throw std::runtime_error("Trying to assign a value to null pointer");
+
+#ifdef DEBUG
+								std::cout << "headerParam.getType() == " << toString(headerParam->getType()) << std::endl;
+#endif
+								if (headerParam->getType() == NodeType::variable) { // local variable
+									float res = headerParam->evaluate() + 1.0f;
+									headerParam->set(res);
+
+									return res;
+								}
+
+#ifdef DEBUG
+								if (headerParam->getType() == NodeType::common)
+									std::cout << "headerParam->associated->getType() == " << toString(headerParam->associated->getType()) << std::endl;
+#endif
+
+								if (headerParam->getType() == NodeType::common && headerParam->associated->getType() == NodeType::variable) { // global variable passed as parameter
+									float res = headerParam->associated->evaluate() + 1.0f;
+									headerParam->associated->set(res);
+
+									return res;
+								}
 							}
-
-							throw std::runtime_error("Trying to increment a non-variable");
+							throw std::runtime_error("Trying to assign a value to the non-variable");
 						}
 					),
 					new PreDefinedFunction("++", "a++", "Increment variable (postfix)", 1, Fix::postfix, defaultPrefixFunctionPrecedence, false,
 						[](Node* self) {
-							if (!self->params[0])
-								throw std::runtime_error("No parameter passed to ++");
+							if (self->params[0] == nullptr)
+								throw std::runtime_error("No parameter was passed to the function");
 
-							Node* varNode = self->params[0];
-							float oldVal;
+							Node* zeroParam = self->params[0];
+#ifdef DEBUG
+							std::cout << "zeroParam.getType() == " << toString(zeroParam->getType()) << std::endl;
+#endif
+							if (zeroParam->getType() == NodeType::common && zeroParam->associated->getType() == NodeType::variable) { // global variable
+								float res = zeroParam->associated->evaluate();
+								zeroParam->associated->set(res + 1.0f);
 
-							if (varNode->getType() == NodeType::common && varNode->associated->getType() == NodeType::variable) {
-								oldVal = varNode->associated->evaluate();
-								varNode->associated->set(oldVal + 1.0f);
-								return oldVal;
+								return res;
 							}
 
-							if (varNode->getType() == NodeType::input) {
-								Node* headerParam = varNode->associated->params[varNode->getParameterIndex()];
-								if (!headerParam || headerParam->getType() != NodeType::common || headerParam->associated->getType() != NodeType::variable)
-									throw std::runtime_error("Trying to increment a non-variable");
+							if (zeroParam->getType() == NodeType::input) {
+								Node* headerParam = zeroParam->associated->params[zeroParam->getParameterIndex()];
 
-								oldVal = headerParam->associated->evaluate();
-								headerParam->associated->set(oldVal + 1.0f);
-								return oldVal;
+
+								if (headerParam == nullptr)
+									throw std::runtime_error("Trying to assign a value to null pointer");
+
+#ifdef DEBUG
+								std::cout << "headerParam.getType() == " << toString(headerParam->getType()) << std::endl;
+#endif
+								if (headerParam->getType() == NodeType::variable) { // local variable
+									float res = headerParam->evaluate();
+									headerParam->set(res + 1.0f);
+
+									return res;
+								}
+
+#ifdef DEBUG
+								if (headerParam->getType() == NodeType::common)
+									std::cout << "headerParam->associated->getType() == " << toString(headerParam->associated->getType()) << std::endl;
+#endif
+
+								if (headerParam->getType() == NodeType::common && headerParam->associated->getType() == NodeType::variable) { // global variable passed as parameter
+									float res = headerParam->associated->evaluate();
+									headerParam->associated->set(res + 1.0f);
+
+									return res;
+								}
 							}
-
-							throw std::runtime_error("Trying to increment a non-variable");
+							throw std::runtime_error("Trying to assign a value to the non-variable");
 						}
 					)
 				}
@@ -335,55 +506,98 @@ namespace CalculatorNamespace {
 			{ "--", {
 					new PreDefinedFunction("--", "--a", "Decrement variable (prefix)", 1, Fix::prefix, defaultPrefixFunctionPrecedence, false,
 						[](Node* self) {
-							if (!self->params[0])
-								throw std::runtime_error("No parameter passed to --");
+							if (self->params[0] == nullptr)
+								throw std::runtime_error("No parameter was passed to the function");
 
-							Node* varNode = self->params[0];
+							Node* zeroParam = self->params[0];
+#ifdef DEBUG
+							std::cout << "zeroParam.getType() == " << toString(zeroParam->getType()) << std::endl;
+#endif
+							if (zeroParam->getType() == NodeType::common && zeroParam->associated->getType() == NodeType::variable) { // global variable
+								float res = zeroParam->associated->evaluate() - 1.0f;
+								zeroParam->associated->set(res);
 
-							if (varNode->getType() == NodeType::common && varNode->associated->getType() == NodeType::variable) {
-								float val = varNode->associated->evaluate() - 1.0f;
-								varNode->associated->set(val);
-								return val;
+								return res;
 							}
 
-							if (varNode->getType() == NodeType::input) {
-								Node* headerParam = varNode->associated->params[varNode->getParameterIndex()];
-								if (!headerParam || headerParam->getType() != NodeType::common || headerParam->associated->getType() != NodeType::variable)
-									throw std::runtime_error("Trying to decrement a non-variable");
+							if (zeroParam->getType() == NodeType::input) {
+								Node* headerParam = zeroParam->associated->params[zeroParam->getParameterIndex()];
 
-								float val = headerParam->associated->evaluate() - 1.0f;
-								headerParam->associated->set(val);
-								return val;
+
+								if (headerParam == nullptr)
+									throw std::runtime_error("Trying to assign a value to null pointer");
+
+#ifdef DEBUG
+								std::cout << "headerParam.getType() == " << toString(headerParam->getType()) << std::endl;
+#endif
+								if (headerParam->getType() == NodeType::variable) { // local variable
+									float res = headerParam->evaluate() - 1.0f;
+									headerParam->set(res);
+
+									return res;
+								}
+
+#ifdef DEBUG
+								if (headerParam->getType() == NodeType::common)
+									std::cout << "headerParam->associated->getType() == " << toString(headerParam->associated->getType()) << std::endl;
+#endif
+
+								if (headerParam->getType() == NodeType::common && headerParam->associated->getType() == NodeType::variable) { // global variable passed as parameter
+									float res = headerParam->associated->evaluate() - 1.0f;
+									headerParam->associated->set(res);
+
+									return res;
+								}
 							}
-
-							throw std::runtime_error("Trying to decrement a non-variable");
+							throw std::runtime_error("Trying to assign a value to the non-variable");
 						}
 					),
 					new PreDefinedFunction("--", "a--", "Decrement variable (postfix)", 1, Fix::postfix, defaultPrefixFunctionPrecedence, false,
 						[](Node* self) {
-							if (!self->params[0])
-								throw std::runtime_error("No parameter passed to --");
+							if (self->params[0] == nullptr)
+								throw std::runtime_error("No parameter was passed to the function");
 
-							Node* varNode = self->params[0];
-							float oldVal;
+							Node* zeroParam = self->params[0];
+#ifdef DEBUG
+							std::cout << "zeroParam.getType() == " << toString(zeroParam->getType()) << std::endl;
+#endif
+							if (zeroParam->getType() == NodeType::common && zeroParam->associated->getType() == NodeType::variable) { // global variable
+								float res = zeroParam->associated->evaluate();
+								zeroParam->associated->set(res - 1.0f);
 
-							if (varNode->getType() == NodeType::common && varNode->associated->getType() == NodeType::variable) {
-								oldVal = varNode->associated->evaluate();
-								varNode->associated->set(oldVal - 1.0f);
-								return oldVal;
+								return res;
 							}
 
-							if (varNode->getType() == NodeType::input) {
-								Node* headerParam = varNode->associated->params[varNode->getParameterIndex()];
-								if (!headerParam || headerParam->getType() != NodeType::common || headerParam->associated->getType() != NodeType::variable)
-									throw std::runtime_error("Trying to decrement a non-variable");
+							if (zeroParam->getType() == NodeType::input) {
+								Node* headerParam = zeroParam->associated->params[zeroParam->getParameterIndex()];
 
-								oldVal = headerParam->associated->evaluate();
-								headerParam->associated->set(oldVal - 1.0f);
-								return oldVal;
+
+								if (headerParam == nullptr)
+									throw std::runtime_error("Trying to assign a value to null pointer");
+
+#ifdef DEBUG
+								std::cout << "headerParam.getType() == " << toString(headerParam->getType()) << std::endl;
+#endif
+								if (headerParam->getType() == NodeType::variable) { // local variable
+									float res = headerParam->evaluate();
+									headerParam->set(res - 1.0f);
+
+									return res;
+								}
+
+#ifdef DEBUG
+								if (headerParam->getType() == NodeType::common)
+									std::cout << "headerParam->associated->getType() == " << toString(headerParam->associated->getType()) << std::endl;
+#endif
+
+								if (headerParam->getType() == NodeType::common && headerParam->associated->getType() == NodeType::variable) { // global variable passed as parameter
+									float res = headerParam->associated->evaluate();
+									headerParam->associated->set(res - 1.0f);
+
+									return res;
+								}
 							}
-
-							throw std::runtime_error("Trying to decrement a non-variable");
+							throw std::runtime_error("Trying to assign a value to the non-variable");
 						}
 					)
 				} 
@@ -952,7 +1166,7 @@ namespace CalculatorNamespace {
 	}
 
 	
-	void DataBase::changeUserDefinedFunction(std::string& name, std::string& newExpression, int amountOfArguments,
+	void DataBase::changeUserDefinedFunction(std::string& name, std::string& newExpression, int amountOfArguments, int newAmountOfLocals,
 		const std::set<UserDefinedFunction*>& newDependencies, const std::set<Variable*> newVariableDependencies) {
 
 		bool foundAndChanged = false;
@@ -976,6 +1190,7 @@ namespace CalculatorNamespace {
 					varDep->dependants.insert(func);
 
 				func->expression = newExpression;
+				func->header->changeAmountOfLocals(amountOfArguments, newAmountOfLocals);
 				break;
 			}
 		}

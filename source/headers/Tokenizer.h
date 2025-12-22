@@ -25,7 +25,7 @@ namespace CalculatorNamespace {
         inline bool isNumberPart(char c);
         inline bool isSpecialChar(char c);
         inline void skipWhiteSpaces(const std::string& input, size_t& pos);
-
+    
         std::string readNumber(const std::string& input, size_t& pos);
         std::string readSymbols(const std::string& input, size_t& pos, const DataBase& base);
         std::string readString(const std::string& input, size_t& pos);

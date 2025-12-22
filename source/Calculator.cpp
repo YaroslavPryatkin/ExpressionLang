@@ -10,7 +10,7 @@ namespace CalculatorNamespace {
 
 		if (input == "stop") {
 			savedInput = "";
-			return "Error: stopped\n";
+			return "Error: stopped\n\n";
 		}
 
 		//trim right
@@ -20,7 +20,18 @@ namespace CalculatorNamespace {
 		else
 			return "";
 
-		if (input.back() == ';' || input.back() == ',') {
+		if (input.back() == ';' || input.back() == ',' || input.back() == '(' || input.back() == '+' || 
+			input.back() == '-' || input.back() == '*' || input.back() == '/' || input.back() == '^' || 
+			input.back() == '=') {
+
+			savedInput += input;
+			return std::string("");
+		}
+		else if (input.back() == '\\') {
+
+			while(input.back() == '\\') 
+				input.pop_back();
+
 			savedInput += input;
 			return std::string("");
 		}
@@ -60,7 +71,7 @@ namespace CalculatorNamespace {
 				std::cout << nm << std::endl;
 #endif
 
-			auto [ rpn, dependencies, variableDependencies]  = tokenizedToRpn.parse(tokenized.mainPart, base, names, args);
+			auto [ rpn, dependencies, variableDependencies, amountOfLocals]  = tokenizedToRpn.parse(tokenized.mainPart, base, names, args);
 #ifdef DEBUG
 			for (int i = 0;i < rpn.size();i++) {
 				std::cout << rpn[i].header << " " << rpn[i].intValue << " " << rpn[i].isNumber << " " << rpn[i].value << std::endl;
@@ -82,9 +93,9 @@ namespace CalculatorNamespace {
 						if (ans == "y" || ans == "yes") {
 							try {
 								Node* header = base.findUserDefinedFunction(name, amountOfArgs)->header;
-								rpnToTree.parseIntoExisting(rpn, amountOfArgs, header);
-								base.changeUserDefinedFunction(name, tokenizer.makeExpression(tokenized, i), amountOfArgs, dependencies, variableDependencies);
-								result += std::string("Function ") + name + " was succesfully changed\n\n";
+								rpnToTree.parseIntoExisting(rpn, amountOfArgs, amountOfLocals, header);
+								base.changeUserDefinedFunction(name, tokenizer.makeExpression(tokenized, i), amountOfArgs, amountOfLocals, dependencies, variableDependencies);
+								result += std::string("Function ") + name + std::string(" with ") + std::to_string(amountOfArgs) + std::string(" arguments was succesfully changed\n\n");
 							}
 							catch (const std::exception& e) {
 								result += std::string(e.what()) + "\n\n";
@@ -93,10 +104,10 @@ namespace CalculatorNamespace {
 						else result += std::string("Function ") + name + " was skipped\n\n";
 					}
 					else {
-						Node* newHeader = rpnToTree.parse(rpn, amountOfArgs);
+						Node* newHeader = rpnToTree.parse(rpn, amountOfArgs, amountOfLocals);
 						try {
 							base.addUserDefinedFunction(name, tokenizer.makeExpression(tokenized, i), newHeader, amountOfArgs, dependencies, variableDependencies);
-							result += std::string("Function ") + name + " was succesfully written\n\n";
+							result += std::string("Function ") + name + " with " + std::to_string(amountOfArgs) + " arguments was succesfully written\n\n";
 						}
 						catch (const std::exception& e) {
 							result += std::string(e.what()) + "\n\n";
@@ -111,7 +122,9 @@ namespace CalculatorNamespace {
 				if (base.isFunction(tokenized.names[i]))
 					throw std::runtime_error("Variable can not have the same name as function: " + tokenized.names[i]);
 
-			std::vector<rpnToken> rpn = std::get<0>(tokenizedToRpn.parse(tokenized.mainPart, base)); //names == empty_set, args == empty_map 
+			auto [rpn, dependencies, variableDependencies, amountOfLocals] = tokenizedToRpn.parse(tokenized.mainPart, base); //names == empty_set, args == empty_map 
+			if (amountOfLocals > 0)
+				throw std::runtime_error("You didn't create a functions, but you've defined local variables");
 #ifdef DEBUG
 			for (int i = 0;i < rpn.size();i++) {
 				std::cout << rpn[i].header << " " << rpn[i].intValue << " " << rpn[i].isNumber << " " << rpn[i].value << std::endl;

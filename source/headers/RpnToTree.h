@@ -16,7 +16,7 @@ namespace CalculatorNamespace {
 
     public:
         RpnToTree();
-        Node* parse(std::vector<rpnToken>& rpn, int amountOfArgs = 0);
-        void parseIntoExisting(std::vector<rpnToken>& rpn, int amountOfArgs, Node* header);
+        Node* parse(std::vector<rpnToken>& rpn, int amountOfArgs = 0, int amounOfLocals = 0);
+        void parseIntoExisting(std::vector<rpnToken>& rpn, int amountOfArgs, int newAmountOfLocals, Node* header);
     };
 }

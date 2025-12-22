@@ -91,7 +91,7 @@ namespace CalculatorNamespace {
             const std::set<UserDefinedFunction*>& dependencies, const std::set<Variable*> variableDependencies);
 
         //changes meta-data of the function, changes in the header should be done by RpnToTree::parseIntoExisting
-        void changeUserDefinedFunction(std::string& name, std::string& newExpression, int amountOfArguments, const std::set<UserDefinedFunction*>& newDependencies, const std::set<Variable*> newVariableDependencies);
+        void changeUserDefinedFunction(std::string& name, std::string& newExpression, int amountOfArguments, int newAmountOfLocals, const std::set<UserDefinedFunction*>& newDependencies, const std::set<Variable*> newVariableDependencies);
 
         std::pair<std::string, int> askForFunctionCredentials();
 

@@ -59,12 +59,12 @@ namespace CalculatorNamespace {
 		throw std::runtime_error("Wrong RPN, cannot parse");
 	}
 
-	Node* RpnToTree::parse(std::vector<rpnToken>& rpn, int amountOfArgs) {
+	Node* RpnToTree::parse(std::vector<rpnToken>& rpn, int amountOfArgs, int amountOfLocals) {
 		clearFields();
 
 		// header.associated = pointer to the root of the tree, Also it contain array of parameters (nodes point to them indirectly using special "input nodes")
 		// read constructor
-		header = new Node(amountOfArgs);
+		header = new Node(amountOfArgs, amountOfLocals);
 
 
 		for (int i = 0; i < rpn.size(); i++) {
@@ -74,7 +74,7 @@ namespace CalculatorNamespace {
 				if (cur.header == nullptr) {
 					if (cur.intValue == -1 && amountOfArgs > 0)
 						addRecursionNode(header, amountOfArgs);//recursion (cant have recursion if there is no parameters)
-					else if (cur.intValue >= amountOfArgs || cur.intValue < -1)
+					else if (cur.intValue >= amountOfArgs + amountOfLocals || cur.intValue < -1)
 						somethingWentWrong();
 					else
 						nodeStack.push(new Node(header, cur.intValue)); //input node for parameter (read constructor)
@@ -91,7 +91,7 @@ namespace CalculatorNamespace {
 		return header;
 	}
 
-	void RpnToTree::parseIntoExisting(std::vector<rpnToken>& rpn, int amountOfArgs, Node* header)
+	void RpnToTree::parseIntoExisting(std::vector<rpnToken>& rpn, int amountOfArgs, int newAmountOfLocals, Node* header)
 	{
 		if (header == nullptr) 
 			throw std::runtime_error("Trying to change nullptr function");
@@ -116,7 +116,7 @@ namespace CalculatorNamespace {
 				if (cur.header == nullptr) {
 					if (cur.intValue == -1 && amountOfArgs > 0)
 						addRecursionNode(header, amountOfArgs);//recursion (cant have recursion if there is no parameters)
-					else if (cur.intValue >= amountOfArgs || cur.intValue < -1)
+					else if (cur.intValue >= amountOfArgs + newAmountOfLocals || cur.intValue < -1)
 						somethingWentWrong();
 					else
 						nodeStack.push(new Node(header, cur.intValue)); //input node for parameter (read constructor)
@@ -130,6 +130,7 @@ namespace CalculatorNamespace {
 			somethingWentWrong();
 
 		header->associated = nodeStack.top();
+		header->changeAmountOfLocals(amountOfArgs, newAmountOfLocals);
 		delete oldTop;
 		oldTop = nullptr;
 	}

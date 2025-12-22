@@ -29,36 +29,47 @@ int main() {
             }
             else if (line == "var") {
                 calc.base.printVariables();
+                std::cout << std::endl;
             }
             else if (line == "sys") {
                 calc.base.printPreDefinedFunctions();
+                std::cout << std::endl;
             }
             else if (line == "fnc") {
                 calc.base.printUserDefinedFunctions();
+                std::cout << std::endl;
             }
             else if (line == "dpc") {
                 calc.base.askToPrintDependancies();
+                std::cout << std::endl;
             }
             else if (line == "dpd") {
                 calc.base.askToPrintDependants();
+                std::cout << std::endl;
             }
             else if (line == "dpv") {
                 calc.base.askToPrintVariableDependants();
+                std::cout << std::endl;
             }
             else if (line == "set") {
                 calc.base.enterVariable();
+                std::cout << std::endl;
             }
             else if (line == "dlf") {
                 calc.base.askToDelete();
+                std::cout << std::endl;
             }
             else if (line == "dlr") {
                 calc.base.askToDeleteDependantTree();
+                std::cout << std::endl;
             }
             else if (line == "dlv") {
                 calc.base.askToDeleteVariable();
+                std::cout << std::endl;
             }
             else if (line == "clr") {
                 calc.base.clear();
+                std::cout << std::endl;
             }
             else if (line == "help") {
                 std::cout << calc.base.makeTitle("Available commands", consoleWidth, ':') << "\n" << separator << "\n"
@@ -81,64 +92,63 @@ int main() {
             }
             else if(line == "man") {
                 std::cout << calc.base.makeTitle("User manual", consoleWidth, ':') << "\n"
-                    << separator << "\n"
-                    << "  You can enter input in one of the following forms:\n"
-                    << "      1) variableName_1 := variableName_2 := expression\n"
-                    << "              Expression will be calculated, its result will be shown and\n"
-                    << "              written into all listed variables. If variables do not exist,\n"
-                    << "              they will be created automatically.\n"
-                    << "      2) functionName_1 := functionName_2(argName_1, argName_2) := expression\n"
-                    << "              Expression will be stored as a user-defined function.\n"
-                    << "              Recursion and overloading are supported.\n"
-                    << "      3) expression\n"
-                    << "              Expression will be calculated and its result will be shown.\n"
-                    << separator << "\n"
-                    << "  Note: the last name in a definition determines whether it is a function or\n"
-                    << "        a variable and if it is a function, determines an amount of arguments.\n" 
-                    << "        For example : \n"
-                    << "            name_1(arg_1, arg_2) := name_2 := expression\n"
-                    << "        will be treated as a definition of two variables.\n"
-                    << separator << "\n"
-                    << "  If an expression contains a name that has no definition yet, the calculator\n"
-                    << "  will ask you to provide its value and then store it as a variable.\n"
-                    << "  However, if a variable is first encountered on the left side of '=', its\n"
-                    << "  value will NOT be requested and it will be automatically created with value 0,\n"
-                    << "  since it will be immediately overwritten.\n"
-                    << separator << "\n"
-                    << "  Variables always store some value. Functions with zero arguments may be used\n"
-                    << "  as variables, but they are still evaluated at runtime.\n"
-                    << "  For one-argument functions, parentheses around the argument are optional:\n"
-                    << "      sin cos x  is valid input.\n"
-                    << "  This may lead to ambiguity when a function has both zero- and one-argument\n"
-                    << "  overloads.\n"
-                    << "      By default, such functions are assumed to be zero-argument.\n"
-                    << "      Using parentheses makes one-argument interpretation default\n"
-                    << "      for this function and all functions to the left.\n"
-                    << "      Examples:\n"
-                    << "          f_1 f_2 f_3 x        == f_1 * f_2 * f_3 * x\n"
-                    << "          f_1 f_2 f_3(x)       == f_1(f_2(f_3(x)))\n"
-                    << "          f_1 f_2(f_3 x)       == f_1(f_2(f_3 * x))\n"
-                    << separator << "\n"
-                    << "  Function arguments are passed by reference.\n"
-                    << "  This means that assigning a new value to a function argument will modify the\n"
-                    << "  variable that was passed into the function.\n"
-                    << separator << "\n"
-                    << "  The ';' operator allows sequential execution of expressions.\n"
-                    << "      left ; right\n"
-                    << "  First, the left expression is evaluated, then the right one.\n"
-                    << "  The result of the entire expression is the result of the right side.\n"
-                    << "  This allows writing full programs as a single expression.\n"
-                    << "  The last expression not followed by ';' becomes the returned result.\n"
-                    << separator << "\n"
-                    << "  If the input ends with ',' or ';', it will not be evaluated immediately.\n"
-                    << "  Instead, it will be stored and waiting for continuation on the next line.\n"
-                    << "  This allows writing programs across multiple input lines.\n"
-                    << separator << "\n"
-                    << "  Names for functions and variables may contain letters and the '\'' symbol.\n"
-                    << "  They may also contain numbers if separated by '_' characters.\n"
-                    << "      Valid names:   name_1, name_1_a, name__a\n"
-                    << "      Invalid names: name1, name_a, name__1\n"
-                    << "  Functions and variables may not share the same name.\n"
+                    << calc.base.makeTitle("Basic Input Forms", consoleWidth, '-') << "\n"
+                    << "  - 1) variableName_1 := variableName_2 := expression\n"
+                    << "       Calculates expression, shows result, and writes it into all listed variables.\n"
+                    << "       If variables do not exist, they will be created automatically.\n"
+                    << "  - 2) functionName_1 := functionName_2(arg1, arg2) := expression\n"
+                    << "       Expression will be stored as a user-defined function. Recursion and overloading are supported.\n"
+                    << "  - 3) expression\n"
+                    << "       Expression will be calculated and its result will be shown immediately.\n"
+                    << calc.base.makeTitle("Definition Rules", consoleWidth, '-') << "\n"
+                    << "  - Note: The last name in a definition determines whether it is a function or a variable.\n"
+                    << "  - If it is a function, the last name determines the amount of arguments.\n"
+                    << "  - Example: 'name_1(arg_1, arg_2) := name_2 := expression' will be treated as two variables.\n"
+                    << calc.base.makeTitle("Undefined Variables", consoleWidth, '-') << "\n"
+                    << "  - If an expression contains an unknown name, the calculator will ask you to provide its value.\n"
+                    << "  - If a variable is first encountered on the left side of '=', its value will NOT be requested.\n"
+                    << "  - Such variables are automatically created with value 0, as they are immediately overwritten.\n"
+                    << calc.base.makeTitle("Local Variables", consoleWidth, '-') << "\n"
+                    << "  - Use 'local' to declare a variable: 'local a = 5'. New local variables are initialized with 0.0f.\n"
+                    << "  - Technical note: 'local a += 5' is possible, but it is not recommended.\n"
+                    << "  - Local variables shadow global ones and cannot share names with functions or parameters.\n"
+                    << "  - Use 'endlocal' to remove a variable from the current scope.\n"
+                    << "  - Example: local a=5; a+=1; endlocal a=7; a*=10; (Writes 6 to local 'a', 70 to global 'a').\n"
+                    << calc.base.makeTitle("Functions", consoleWidth, '-') << "\n"
+                    << "  - In existing functions, all arguments are passed by reference.\n"
+                    << "  - For one-argument functions, parentheses are optional: 'sin cos x' is valid.\n"
+                    << "  - Functions with both 0 and 1-arg overloads are assumed to be 0-arg by default.\n"
+                    << "  - Using parentheses forces 1-argument interpretation for that function and all to its left:\n"
+                    << "      1) f_1 f_2 f_3 x    == f_1 * f_2 * f_3 * x\n"
+                    << "      2) f_1 f_2 f_3(x)   == f_1(f_2(f_3(x)))\n"
+                    << "      3) f_1 f_2(f_3 x)   == f_1(f_2(f_3 * x))\n"
+                    << calc.base.makeTitle("Recursion", consoleWidth, '-') << "\n"
+                    << "  - In recursion: variables (global, local, or refs) are passed by reference.\n"
+                    << "  - In recursion: expressions (like x-1) are calculated and passed by value.\n"
+                    << "  - Logic: passing 'x-1' by reference to 'x' would cause an immediate infinite loop.\n"
+                    << "  - Passing variables by reference allows modifying values at any recursion level.\n"
+                    << "  - WARNING: The parser does not check for infinite recursion. Use with caution!\n"
+                    << calc.base.makeTitle("Execution and Multi-line", consoleWidth, '-') << "\n"
+                    << "  - Use ';' for sequential execution. The result is the value of the right-side expression.\n"
+                    << "  - The last expression not followed by ';' becomes the returned result.\n"
+                    << "  - Input continues if a line ends with: ';', ',', '(', '+', '-', '*', '/', '^', '=', or '\\'.\n"
+                    << "  - If a line ends with '\\', the character is removed and input continues.\n"
+                    << "  - Type 'stop' to terminate input and cancel evaluation.\n"
+                    << calc.base.makeTitle("Naming Constraints", consoleWidth, '-') << "\n"
+                    << "  - Names may contain letters and the ''' symbol.\n"
+                    << "  - Numbers are allowed only if separated by underscores: 'name_1', 'name__a'.\n"
+                    << "  - Invalid names: 'name1', 'name_a', 'name__1'.\n"
+                    << "  - Functions and variables may not share the same name.\n"
+                    << calc.base.makeTitle("Complex Example", consoleWidth, '-') << "\n"
+                    << "  f(x, y) := \n"
+                    << "  local res = 0; \n"
+                    << "  y += \n"
+                    << "  for(local i=0, i<=x, i++, \n"
+                    << "  res += i    \\\n"
+                    << "  );\n"
+                    << "  amountOfCalls += 1;\n"
+                    << "  res\n"
+                    << "  - Returns sum 1 to x, adds loop count to y, and increments global 'amountOfCalls'.\n"
                     << separator << "\n" << std::endl;
 
             }
