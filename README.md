@@ -137,7 +137,7 @@ Examples
  f(x) :=
  local res = 1;
  local rt = root x;
- for(local i=0, i <= rt, i++,
+ for(local i=2, i <= rt, i++,
      if( x%i == 0, res = 0)    \
  );
  res
