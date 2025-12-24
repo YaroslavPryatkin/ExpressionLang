@@ -109,10 +109,11 @@ Naming Constraints
   - Functions and variables may not share the same name.
 
 Examples
+
  ```a := 10``` or ```a = 10```
   - Sets the value of gloval variable `a` to be `10`.
 
-```f(x) := x + 1``` (```f(x) = x+1``` won't work)
+```f(x) := x + 1```
   - Creates the function f(x), that returns `x+1`.
 
 ```
