@@ -20,17 +20,15 @@ namespace CalculatorNamespace {
 		else
 			return "";
 
-		if (input.back() == ';' || input.back() == ',' || input.back() == '(' || input.back() == '+' || 
-			input.back() == '-' || input.back() == '*' || input.back() == '/' || input.back() == '^' || 
-			input.back() == '=') {
 
-			savedInput += input;
-			return std::string("");
-		}
-		else if (input.back() == '\\') {
+		char back = input.back();
 
-			while(input.back() == '\\') 
-				input.pop_back();
+		while (input.back() == '\\')
+			input.pop_back();
+
+		if (back == ';' || back == ',' || back == '(' || back == '+' ||
+			back == '-' || back == '*' || back == '/' || back == '^' ||
+			back == '=' || back == '%' || back == '\\') {
 
 			savedInput += input;
 			return std::string("");
@@ -40,9 +38,9 @@ namespace CalculatorNamespace {
 			savedInput = "";
 		}
 
+
 		Tokenized tokenized = tokenizer.parse(input, base);
 		int amountOfNames = tokenized.names.size();
-
 
 		if (tokenized.isFunction) {
 			int amountOfArgs = tokenized.args.size();
@@ -54,24 +52,24 @@ namespace CalculatorNamespace {
 				if (base.isFunction(tokenized.args[i]))
 					throw std::runtime_error("Parameter can not have the same name as function: " + tokenized.args[i]);
 
-			std::unordered_map<std::string, int> args;
+			std::unordered_map<std::string, int> argsMap;
 
 			for (int i = 0; i < amountOfArgs; i++)
-				args[tokenized.args[i]] = i;
+				argsMap[tokenized.args[i]] = i;
 
 #ifdef DEBUG			
 			std::cout << tokenizer.makeExpression(tokenized, 0) << std::endl;
 #endif
 
-			std::set<std::string> names(tokenized.names.begin(), tokenized.names.end());
+			std::set<std::string> namesSet(tokenized.names.begin(), tokenized.names.end());
 
 #ifdef DEBUG
 			std::cout << "Names before sent: " << std::endl;
-			for (auto& nm : names)
+			for (auto& nm : namesSet)
 				std::cout << nm << std::endl;
 #endif
 
-			auto [ rpn, dependencies, variableDependencies, amountOfLocals]  = tokenizedToRpn.parse(tokenized.mainPart, base, names, args);
+			auto [ rpn, dependencies, variableDependencies, amountOfLocals]  = tokenizedToRpn.parse(tokenized.mainPart, base, namesSet, argsMap);
 #ifdef DEBUG
 			for (int i = 0;i < rpn.size();i++) {
 				std::cout << rpn[i].header << " " << rpn[i].intValue << " " << rpn[i].isNumber << " " << rpn[i].value << std::endl;
@@ -79,7 +77,9 @@ namespace CalculatorNamespace {
 #endif
 			std::string result = "";
 			for (int i = 0; i < amountOfNames; i++) {
+
 				std::string name = tokenized.names[i];
+
 				if (base.isPreDefinedFunction(name, amountOfArgs)) {
 					result += std::string("Function ") + name + " is pre-defined and can not be changed";
 				}

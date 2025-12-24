@@ -16,8 +16,8 @@ int main() {
 
     std::string line;
 
-    std::cout << "--- Yaroslav Calculator Loaded ---" << std::endl;
-    std::cout << "Type 'help' for a list of commands, 'man' for a manual." << std::endl;
+    std::cout << calc.base.makeTitle("ExpressionLang loaded", consoleWidth, ':') << std::endl;
+    std::cout << "Type 'help' for a list of commands, type 'man' for a manual.\n" << std::endl;
 
     while (true) {
         try {
@@ -73,7 +73,6 @@ int main() {
             }
             else if (line == "help") {
                 std::cout << calc.base.makeTitle("Available commands", consoleWidth, ':') << "\n" << separator << "\n"
-                    << "Available commands:\n"
                     << "  exit - Close the program\n"
                     << "  var  - Print all variables\n"
                     << "  sys  - Print all system (predefined) functions\n"
@@ -131,24 +130,14 @@ int main() {
                     << calc.base.makeTitle("Execution and Multi-line", consoleWidth, '-') << "\n"
                     << "  - Use ';' for sequential execution. The result is the value of the right-side expression.\n"
                     << "  - The last expression not followed by ';' becomes the returned result.\n"
-                    << "  - Input continues if a line ends with: ';', ',', '(', '+', '-', '*', '/', '^', '=', or '\\'.\n"
-                    << "  - If a line ends with '\\', the character is removed and input continues.\n"
+                    << "  - Input continues if a line ends with: ';', ',', '(', '+', '-', '*', '/', '%', '^', '=', or '\\'.\n"
+                    << "  - All '\\' characters end the end of the line are removed.\n"
                     << "  - Type 'stop' to terminate input and cancel evaluation.\n"
                     << calc.base.makeTitle("Naming Constraints", consoleWidth, '-') << "\n"
                     << "  - Names may contain letters and the ''' symbol.\n"
                     << "  - Numbers are allowed only if separated by underscores: 'name_1', 'name__a'.\n"
                     << "  - Invalid names: 'name1', 'name_a', 'name__1'.\n"
                     << "  - Functions and variables may not share the same name.\n"
-                    << calc.base.makeTitle("Complex Example", consoleWidth, '-') << "\n"
-                    << "  f(x, y) := \n"
-                    << "  local res = 0; \n"
-                    << "  y += \n"
-                    << "  for(local i=0, i<=x, i++, \n"
-                    << "  res += i    \\\n"
-                    << "  );\n"
-                    << "  amountOfCalls += 1;\n"
-                    << "  res\n"
-                    << "  - Returns sum 1 to x, adds loop count to y, and increments global 'amountOfCalls'.\n"
                     << separator << "\n" << std::endl;
 
             }

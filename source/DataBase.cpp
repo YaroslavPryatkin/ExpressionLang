@@ -1,5 +1,5 @@
 #include "headers\DataBase.h"
-
+#include <cmath>
 namespace CalculatorNamespace {
 
 	UserDefinedFunction::UserDefinedFunction() : expression(""), header(nullptr), amountOfArguments(0) {}
@@ -717,6 +717,33 @@ namespace CalculatorNamespace {
 					)
 				}
 			},
+
+			{ "//", {
+					new PreDefinedFunction("//", "a//b", "Integer division, floor(a / b)", 2, Fix::infix, 60, false,
+									[](Node* self) {
+							if (self->params[0] == nullptr || self->params[1] == nullptr)
+								throw std::runtime_error("No parameter was passed to the function");
+							float left = self->params[0]->evaluate();
+							float right = self->params[1]->evaluate();
+							return std::floor(left / right);
+						}
+					)
+				}
+			},
+
+			{ "%", {
+					new PreDefinedFunction("%", "a%b", "Reminder of devision, a - floor(a / b) * b", 2, Fix::infix, 60, false,
+									[](Node* self) {
+							if (self->params[0] == nullptr || self->params[1] == nullptr)
+								throw std::runtime_error("No parameter was passed to the function");
+							float left = self->params[0]->evaluate();
+							float right = self->params[1]->evaluate();
+							return left - std::floor(left / right) * right;
+						}
+					)
+				}
+			},
+
 			{"^", {
 					new PreDefinedFunction("^", "a^b", "Exponetiating a to the power of b", 2, Fix::infix, 70, true,
 									[](Node* self) {
@@ -738,6 +765,13 @@ namespace CalculatorNamespace {
 						float res = 1.0f;
 						for (int i = 1; i <= static_cast<int>(val); ++i) res *= i;
 						return res;
+					}
+				),
+				new PreDefinedFunction("!", "!a", "Negations", 1, Fix::prefix, defaultPrefixFunctionPrecedence, false,
+					[](Node* self) {
+						if (!self->params[0]) throw std::runtime_error("No parameter");
+						float res = self->params[0]->evaluate();
+						return res == 0.0f ? 1.0f : 0.0f;
 					}
 				)
 			}},
@@ -864,6 +898,12 @@ namespace CalculatorNamespace {
 						if (self->params[0]->evaluate() != 0.0f) return self->params[1]->evaluate();
 						return self->params[2]->evaluate();
 					}
+				),
+				new PreDefinedFunction("if", "if(cond, then)", "conditional", 2, Fix::prefix, defaultPrefixFunctionPrecedence, false,
+					[](Node* self) {
+						if (self->params[0]->evaluate() != 0.0f) return self->params[1]->evaluate();
+						return 0.0f;
+					}
 				)
 			}},
 
@@ -957,7 +997,40 @@ namespace CalculatorNamespace {
 						return std::atan(self->params[0]->evaluate());
 					}
 				)
+			} },
+
+			{"floor", {
+				 new PreDefinedFunction("floor", "floor(a)", "floor function", 1, Fix::prefix, defaultPrefixFunctionPrecedence, false,
+					 [](Node* self) {
+						 return std::floor(self->params[0]->evaluate());
+					 }
+				 )	
+			} },
+
+			{"ceil", {
+				new PreDefinedFunction("ceil", "ceil(a)", "ceil function", 1, Fix::prefix, defaultPrefixFunctionPrecedence, false,
+					[](Node* self) {
+						return std::ceil(self->params[0]->evaluate());
+					}
+				)	
+			} },
+
+			{ "trunc", {
+				new PreDefinedFunction("trunc", "trunc(a)", "truncate function", 1, Fix::prefix, defaultPrefixFunctionPrecedence, false,
+					[](Node* self) {
+						return std::trunc(self->params[0]->evaluate());
+					}
+				)
+			} },
+
+			{ "round", {
+				new PreDefinedFunction("round", "round(a)", "round function", 1, Fix::prefix, defaultPrefixFunctionPrecedence, false,
+					[](Node* self) {
+						return std::round(self->params[0]->evaluate());
+					}
+				)
 			} }
+
 		};
 		initDefaultVariables();
 	}

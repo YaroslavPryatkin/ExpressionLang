@@ -28,7 +28,7 @@ namespace CalculatorNamespace {
 
 	inline bool TokenizedToRpn::isAssign(const std::string& name)
 	{
-		return name == "=" || name == "++" || name == "--" || name == "+=" || name == "-=" || name == "*=" || name == "/=" || name == "^=";
+		return name == "=" || name == "+=" || name == "-=" || name == "*=" || name == "/=" || name == "^=";
 	}
 
 	inline bool TokenizedToRpn::isRecursion(const std::string& name, int amountOfArgsuments)
@@ -211,7 +211,7 @@ namespace CalculatorNamespace {
 		std::cout << "recursion was tried" << std::endl;
 #endif
 		if (isAssign(next))
-			throw std::runtime_error("Assigning value to the non-variable");
+			throw std::runtime_error(std::string("Assigning value to the non - variable using ") + next);
 
 		if (currentFix != Fix::prefix)
 			tryOperation(base->implicitOperationName, Fix::infix);
@@ -361,7 +361,7 @@ namespace CalculatorNamespace {
 		if (mayBeNumber) {
 			if (pos == name.size()) {
 				if (isAssign(next))
-					throw std::runtime_error("Assigning value to the non-variable");
+					throw std::runtime_error(std::string("Assigning value to the non - variable using ") + next);
 #ifdef DEBUG
 				std::cout << "found constant number " << value << std::endl;
 #endif
@@ -436,18 +436,24 @@ namespace CalculatorNamespace {
 				next = "";
 
 			if (cur == ",") {
+				if (isAssign(next)) //isAssign does not include ++ and --, so only binary operators, therefore I can check it here
+					throw std::runtime_error(std::string("Assigning value to the non - variable using ") + next);
 				parseComma();
 			}
 			else if (cur == "(") {
+				if (isAssign(next))
+					throw std::runtime_error(std::string("Assigning value to the non - variable using ") + next);
 				parseOpeningParanthesis();
 			}
 			else if (cur == ")") {
 				if (isAssign(next))
-					throw std::runtime_error("Assigning value to the non-variable"); // preventing (1+2)++
+					throw std::runtime_error(std::string("Assigning value to the non - variable using ") + next);
 				parseClosingParanthesis();
 			}
 			else if (!tryKeyWord(cur,next) && !tryRecurion(cur, next)) { // try key word, try recursion. If bouth returned false, try operation and variable
 				if (base->isFunction(cur)) {
+					if (isAssign(next))
+						throw std::runtime_error(std::string("Assigning value to the non - variable using ") + next);
 					parseOperation(cur);
 				}
 				else

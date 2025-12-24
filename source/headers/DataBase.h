@@ -4,6 +4,7 @@
 #include <vector>
 #include <iostream>
 #include <set>
+
 #include "Supplementary.h"
 
 namespace CalculatorNamespace {
