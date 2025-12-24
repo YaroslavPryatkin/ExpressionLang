@@ -1,0 +1,4 @@
+I'm going to improve stack usage by copying predefined function nodes instead of creating common nodes that point to them.
+
+Also I'm going to create implicid sequential evaluating function: code; code; code will be transformed into sequence(code, code, code),
+because now ; is just an operator and it is horrible in terms of stack efficiency.
