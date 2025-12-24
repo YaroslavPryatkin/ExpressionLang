@@ -1,8 +1,8 @@
-# CoolCalculator
+# ExpressionLang
 
-CoolCalculator is a console-based mini programming language and expression evaluator. 
+ExpressionLang is a console-based mini programming language and expression evaluator. 
 It supports user-defined variables and functions, recursion, references, local scopes, 
-sequential execution, and multi-line input. While it started as a calculator, it now 
+sequential execution, and multi-line input. It started as a calculator, but it now 
 functions more like a small interpreted language.
 
 ---
@@ -108,15 +108,38 @@ Naming Constraints
   - Invalid names: `name1`, `name_a`, `name__1`.
   - Functions and variables may not share the same name.
 
-Complex Example
+Examples
+ ```a := 10``` or ```a = 10```
+  - Sets the value of gloval variable `a` to be `10`.
+
+```f(x) := x + 1``` (```f(x) = x+1``` won't work)
+  - Creates the function f(x), that returns `x+1`.
+
 ```
-  f(x, y) :=
-  local res = 0;
-  y +=
-  for(local i=0, i<=x, i++,
-  res += i    \
-  );
-  amountOfCalls += 1;
-  res
+ f(x) := if(x>0, f(x-1) + x, 0)
+```
+  - Returns sum `1` to `x`.
+
+```
+ f(x, y) :=
+ local res = 0;
+ y +=
+ for(local i=0, i<=x, i++,
+     res += i    \
+ );
+ amountOfCalls += 1;
+ res
 ```
   - Returns sum `1` to `x`, adds loop count to `y`, and increments global `amountOfCalls`.
+
+```
+ f(x) :+
+ local res = 1;
+ local rt = root x;
+ for(local i=0, i <= rt, i++,
+     if( x/i - floor (x/i), res = 0)    \
+ );
+ res
+
+```
+  - Returns `1` is `x` is prime, `0` otherwise.
