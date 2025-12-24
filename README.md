@@ -98,7 +98,7 @@ Recursion
 Execution and Multi-line
   - Use `;` for sequential execution. The result is the value of the right-side expression.
   - The last expression not followed by `;` becomes the returned result.
-  - Input continues if a line ends with: `;`, `,`, `(`, `+`, `-`, `*`, `/`, `^`, `=` or `\` .
+  - Input continues if a line ends with: `;`, `,`, `(`, `+`, `-`, `*`, `/`, `%`, `^`, `=` or `\` .
   - If a line ends with `\`, the character is removed and input continues.
   - Type 'stop' to terminate input and cancel evaluation.
 
@@ -134,11 +134,11 @@ Examples
   - Returns sum `1` to `x`, adds loop count to `y`, and increments global `amountOfCalls`.
 
 ```
- f(x) :+
+ f(x) :=
  local res = 1;
  local rt = root x;
  for(local i=0, i <= rt, i++,
-     if( x/i - floor (x/i), res = 0)    \
+     if( x%i == 0, res = 0)    \
  );
  res
 
