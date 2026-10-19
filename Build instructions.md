@@ -4,7 +4,7 @@ From MSVC terminal:
 ```
  cd <folder containing /source> 
 
- cl.exe /EHsc /std:c++17 /I source source\*.cpp /Fo"build\\" /Fe:calculator.exe /O2
+ cl.exe /EHsc /std:c++17 /I source source\*.cpp /Fo"build\\" /Fe:ExpressionLang.exe /O2
 ```
 
 .bat makefile for Windows:
@@ -19,7 +19,7 @@ if not exist build mkdir build
 
 cl.exe /EHsc /std:c++17 /I source source\*.cpp ^
     /Fo"build\\" ^
-    /Fe:calculator.exe ^
+    /Fe:ExpressionLang.exe ^
     /O2
 ```
 
@@ -30,7 +30,7 @@ CXXFLAGS := -std=c++17 -O2
 INCLUDES := -Isource
 SRC      := source/*.cpp
 BUILD    := build
-TARGET   := calculator
+TARGET   := ExpressionLang
 
 all: $(TARGET)
 
