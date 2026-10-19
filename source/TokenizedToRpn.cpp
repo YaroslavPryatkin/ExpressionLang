@@ -222,6 +222,11 @@ namespace CalculatorNamespace {
 	}
 
 	void TokenizedToRpn::parseComma() {
+		if (opStack.empty()) {
+			throw std::runtime_error(
+				"Unexpected comma: no matching opening parenthesis"
+			);
+		}
 		if (opStack.top().name == "(" && opStack.top().amountOfArgs == 0) return; // if there were nothing, skip the typo
 
 		while (!opStack.empty() && opStack.top().name != "(")
@@ -255,9 +260,15 @@ namespace CalculatorNamespace {
 	}
 
 	void TokenizedToRpn::parseClosingParanthesis() {
+		if (opStack.empty()) {
+			throw std::runtime_error("Mismatched parentheses");
+		}
+
 #ifdef DEBUG
 		std::cout << "stack top info: top name: " << opStack.top().name << " top amount of arguments:" << opStack.top().amountOfArgs << std::endl;
 #endif
+
+
 		int wasSomething = (opStack.top().name != "(" || opStack.top().amountOfArgs > 0) ? 1 : 0; //check if there were anything after last comma, so func(a) doesnt have one argument
 
 		while (!opStack.empty() && opStack.top().name != "(") {
@@ -276,7 +287,7 @@ namespace CalculatorNamespace {
 
 		opStack.pop();// pop the "(" 
 #ifdef DEBUG
-		std::cout << "Closing Paranthesis: " << opStack.top().amountOfArgs << " " << wasSomething << " " << std::endl;
+		std::cout << "Closing Paranthesis: " << (opStack.empty() ? 0 : opStack.top().amountOfArgs) << " " << wasSomething << " " << std::endl;
 #endif
 		// after closing parenthesis, pop all prefix operators to rpn, by default considering them as non zero arguments. 
 		// So f_1 f_2 f_3 will be parsed as f_1(f_2(f_3(x))), if all f_i(x) exist. If f_2(x) does not, then it will barsed as f_1(f_2()*f_3(x))

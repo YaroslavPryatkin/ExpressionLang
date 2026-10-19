@@ -2,15 +2,44 @@
 #include <string>
 #include <limits>
 #include "headers\Calculator.h"
-/*
-cd "C:\Users\yaros\OneDrive\Документы\Calculator"
 
-cl.exe /EHsc /std:c++17 /I source source\*.cpp /Fo"build\\" /Fe:calculator.exe /O2
+#ifdef _WIN32
+#ifndef NOMINMAX
+#define NOMINMAX
+#endif
+#include <windows.h>
+#else
+#include <sys/ioctl.h>
+#include <unistd.h>
+#endif
+
+/*
+CL /EHsc /std:c++17 /I source source\*.cpp /Fo"build\\" /Fe:ExpressionLang.exe /O2
 */
 
+int getConsoleWidth() {
+#ifdef _WIN32
+    CONSOLE_SCREEN_BUFFER_INFO info{};
+    if (GetConsoleScreenBufferInfo(
+        GetStdHandle(STD_OUTPUT_HANDLE), &info)) {
+        const int width =
+            info.srWindow.Right - info.srWindow.Left + 1;
+        if (width > 0) return width;
+    }
+#else
+    winsize size{};
+    if (ioctl(STDOUT_FILENO, TIOCGWINSZ, &size) == 0 &&
+        size.ws_col > 0) {
+        return static_cast<int>(size.ws_col);
+    }
+#endif
+    return 120;
+}
+
+
 int main() {
-    const int consoleWidth = 120;
-    const std::string separator(consoleWidth, '-');
+    int consoleWidth = getConsoleWidth();
+    std::string separator(consoleWidth, '-');
 
     CalculatorNamespace::Calculator calc(std::cin, std::cout, consoleWidth);
 
@@ -23,6 +52,10 @@ int main() {
         try {
             std::cout << "> ";
             if (!std::getline(std::cin, line)) break;
+
+            consoleWidth = getConsoleWidth();
+            separator.assign(consoleWidth, '-');
+            calc.base.consoleWidth = consoleWidth;
 
             if (line == "exit") {
                 break;
@@ -71,6 +104,14 @@ int main() {
                 calc.base.clear();
                 std::cout << std::endl;
             }
+            else if (line == "save") {
+                calc.saveIntoFile();
+                std::cout << std::endl;
+            }
+            else if (line == "load") {
+                calc.loadFromFile();
+                std::cout << std::endl;
+            }
             else if (line == "help") {
                 std::cout << calc.base.makeTitle("Available commands", consoleWidth, ':') << "\n" << separator << "\n"
                     << "  exit - Close the program\n"
@@ -85,7 +126,9 @@ int main() {
                     << "  dlr  - Delete a user-defined function and recursively all its dependants\n"
                     << "  dlv  - Delete a specific variable\n"
                     << "  clr  - Delete all variables and user functions\n"
-                    << "  man - Show user manual\n"
+                    << "  save - Save variables and user-defined functions\n"
+                    << "  load - Load variables and functions from a save file\n"
+                    << "  man  - Show user manual\n"
                     << "  help - Show this information\n"
                     << "  Any other input will be calculated\n" << separator << "\n" << std::endl;
             }

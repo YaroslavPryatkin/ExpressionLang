@@ -1,5 +1,9 @@
 #include "headers\Calculator.h"
 #include <iostream>
+#include <string>
+#include <sstream>
+#include <fstream>
+
 namespace CalculatorNamespace {
 
 	Calculator::Calculator(std::istream& in, std::ostream& out, int consoleWidth)
@@ -138,4 +142,109 @@ namespace CalculatorNamespace {
 			return std::to_string(value) + "\n\n";
 		}
 	}
+
+
+	std::string Calculator::askForSavefileName() {
+		std::cout << "Enter file name "
+			"(empty = " << defaultSavefileName << "): ";
+
+		std::string name;
+		if (!std::getline(std::cin, name)) {
+			throw std::runtime_error("Could not read file name");
+		}
+
+		if (name.empty()) {
+			name = defaultSavefileName;
+		}
+
+		if (name.size() < savefileExtension.size() ||
+			name.compare(
+				name.size() - savefileExtension.size(),
+				savefileExtension.size(),
+				savefileExtension
+			) != 0) {
+			name += savefileExtension;
+		}
+
+		return name;
+	}
+
+	void Calculator::saveIntoFile()
+	{
+		savedInput.clear();
+
+
+		const std::string fileName = askForSavefileName();
+
+		std::ostringstream serialized;
+		base.writeDefinitions(serialized);
+
+		std::ofstream file(fileName);
+
+		if (!file) {
+			throw std::runtime_error(
+				"Could not open file for writing: " + fileName
+			);
+		}
+
+		file << serialized.str();
+
+		file.close();
+
+		if (!file) {
+			throw std::runtime_error(
+				"Failed to finish writing file: " + fileName
+			);
+		}
+
+		std::cout << "Saved to " << fileName << std::endl;
+	}
+
+	void Calculator::loadFromFile()
+	{
+		savedInput.clear();
+
+		const std::string fileName = askForSavefileName();
+		std::ifstream file(fileName);
+
+		if (!file) {
+			throw std::runtime_error(
+				"Could not open save file: " + fileName
+			);
+		}
+
+		std::vector<std::string> definitions;
+		std::string definition;
+
+		while (std::getline(file, definition)) {
+			if (definition.find_first_not_of(" \t\r") !=
+				std::string::npos) {
+				definitions.push_back(definition);
+			}
+		}
+
+		if (file.bad()) {
+			throw std::runtime_error(
+				"Error while reading save file: " + fileName
+			);
+		}
+
+		base.clear(false);
+
+		for (std::size_t i = 0; i < definitions.size(); ++i) {
+			try {
+				std::cout << parse(definitions[i]);
+			}
+			catch (const std::exception& e) {
+				throw std::runtime_error(
+					"Failed to load definition " +
+					std::to_string(i + 1) + ": " + e.what()
+				);
+			}
+		}
+
+		savedInput.clear();
+		std::cout << "Loaded from " << fileName << std::endl;
+	}
+
 }

@@ -12,6 +12,13 @@ namespace CalculatorNamespace {
 		RpnToTree rpnToTree;
 		std::istream& in;
 		std::ostream& out;
+
+
+		const std::string defaultSavefileName = "ExpressionLangSaveFile";
+		const std::string savefileExtension = ".explng";
+
+		std::string askForSavefileName();
+
 	public:
 		DataBase base;
 
@@ -20,5 +27,10 @@ namespace CalculatorNamespace {
 		std::string savedInput;
 
 		std::string parse(std::string input);
+		void saveIntoFile();
+		void loadFromFile();
+
+
 	};
+
 }

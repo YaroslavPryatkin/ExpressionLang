@@ -1,5 +1,12 @@
 #include "headers\DataBase.h"
 #include <cmath>
+#include <functional>
+#include <sstream>
+#include <iomanip>
+#include <algorithm>
+#include <limits>
+#include <unordered_set>
+
 namespace CalculatorNamespace {
 
 	UserDefinedFunction::UserDefinedFunction() : expression(""), header(nullptr), amountOfArguments(0) {}
@@ -1200,8 +1207,8 @@ namespace CalculatorNamespace {
 			if (fix == Fix::prefix) {
 				for (auto& fnc : preDefined[name]) {
 					if (fnc->fix == Fix::prefix) {
-						if (fnc->amountOfArguments == amountOfArguments || amountOfArguments == -1) // -1 means any amount of argument, works only for predefined prefix functions
-							return rpnToken(fnc->header, fnc->amountOfArguments);
+						if (fnc->amountOfArguments == amountOfArguments || fnc->amountOfArguments == -1) // -1 means any amount of argument, works only for predefined prefix functions
+							return rpnToken(fnc->header, amountOfArguments);
 					}
 				}
 			}
@@ -1703,10 +1710,157 @@ namespace CalculatorNamespace {
 		}
 	}
 
-	void DataBase::clear() {
+	void DataBase::clear(bool shouldPrintConfirmation) {
 		variables.clear();
 		userDefined.clear();
 		initDefaultVariables();
-		out << "All variables and user-defined functions have been cleared." << std::endl;
+		if(shouldPrintConfirmation)
+			out << "All variables and user-defined functions have been cleared." << std::endl;
+	}
+
+	void DataBase::writeDefinitions(std::ostream& destination) const
+	{
+		std::vector<std::pair<std::string, std::string>> variableLines;
+		variableLines.reserve(variables.size());
+
+		for (const auto& entry : variables) {
+			if (predefinedVariableNames.count(entry.first) > 0) continue;
+
+			const float value = entry.second->header->evaluate();
+
+			if (!std::isfinite(value)) {
+				throw std::runtime_error(
+					"Cannot save non-finite value of variable: " + entry.first
+				);
+			}
+
+			std::ostringstream number;
+			number << std::fixed
+				<< std::setprecision(std::numeric_limits<float>::max_digits10 + 40)
+				<< value;
+
+			std::string valueString = number.str();
+
+			const std::size_t dot = valueString.find('.');
+			if (dot != std::string::npos) {
+				while (!valueString.empty() && valueString.back() == '0') {
+					valueString.pop_back();
+				}
+
+				if (!valueString.empty() && valueString.back() == '.') {
+					valueString.pop_back();
+				}
+			}
+
+			variableLines.emplace_back(entry.first, std::move(valueString));
+		}
+
+		std::sort(
+			variableLines.begin(),
+			variableLines.end(),
+			[](const auto& lhs, const auto& rhs) {
+				return lhs.first < rhs.first;
+			}
+		);
+
+		std::vector<UserDefinedFunction*> functions;
+
+		for (const auto& entry : userDefined) {
+			for (UserDefinedFunction* function : entry.second) {
+				functions.push_back(function);
+			}
+		}
+
+		std::sort(
+			functions.begin(),
+			functions.end(),
+			[](const auto* lhs, const auto* rhs) {
+				return lhs->expression < rhs->expression;
+			}
+		);
+
+		const std::unordered_set<UserDefinedFunction*> allFunctions(
+			functions.begin(), functions.end()
+		);
+
+		std::unordered_map<UserDefinedFunction*, std::size_t> indegree;
+
+		std::unordered_map<
+			UserDefinedFunction*,
+			std::vector<UserDefinedFunction*>
+		> dependants;
+
+		for (UserDefinedFunction* function : functions) {
+			indegree[function] = 0;
+		}
+
+		for (UserDefinedFunction* function : functions) {
+			for (UserDefinedFunction* dependency : function->dependencies) {
+				if (allFunctions.find(dependency) == allFunctions.end()) {
+					throw std::runtime_error(
+						"Missing dependency while saving function: " +
+						function->expression
+					);
+				}
+
+				++indegree[function];
+				dependants[dependency].push_back(function);
+			}
+		}
+
+		auto byExpression = [](UserDefinedFunction* lhs,
+			UserDefinedFunction* rhs) {
+				if (lhs->expression != rhs->expression) {
+					return lhs->expression < rhs->expression;
+				}
+
+				return std::less<UserDefinedFunction*>{}(lhs, rhs);
+			};
+
+		std::set<UserDefinedFunction*, decltype(byExpression)> ready(
+			byExpression
+		);
+
+		for (UserDefinedFunction* function : functions) {
+			if (indegree[function] == 0) {
+				ready.insert(function);
+			}
+		}
+
+		//top sort
+		std::vector<UserDefinedFunction*> orderedFunctions;
+		orderedFunctions.reserve(functions.size());
+
+		while (!ready.empty()) {
+			UserDefinedFunction* function = *ready.begin();
+			ready.erase(ready.begin());
+
+			orderedFunctions.push_back(function);
+
+			for (UserDefinedFunction* dependant : dependants[function]) {
+				if (--indegree[dependant] == 0) {
+					ready.insert(dependant);
+				}
+			}
+		}
+
+		if (orderedFunctions.size() != functions.size()) {
+			throw std::runtime_error(
+				"Cannot save functions: cyclic dependencies detected"
+			);
+		}
+
+		for (const auto& variable : variableLines) {
+			destination << variable.first << " := "
+				<< variable.second << '\n';
+		}
+
+		for (const UserDefinedFunction* function : orderedFunctions) {
+			destination << function->expression << '\n';
+		}
+
+		if (!destination) {
+			throw std::runtime_error("Failed to serialize definitions");
+		}
 	}
 }	

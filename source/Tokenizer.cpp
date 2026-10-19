@@ -125,7 +125,7 @@ namespace CalculatorNamespace {
             }
             ans += ")";
         }
-        ans += " = ";
+        ans += " := ";
 
         std::vector<std::string>& lines = input.mainPart;
         for (size_t i = 0; i < lines.size(); i++) {

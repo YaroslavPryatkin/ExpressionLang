@@ -57,6 +57,8 @@ namespace CalculatorNamespace {
 
         void gatherDependantTree(UserDefinedFunction* toDelete, std::set<UserDefinedFunction*>& toDeleteSet);
 
+        const std::set<std::string> predefinedVariableNames = { "pi", "phi", "e" };
+
     public:
         const int defaultPrefixFunctionPrecedence = 100;
         const std::string implicitOperationName = "1__implicit_miltiplication__";
@@ -122,6 +124,7 @@ namespace CalculatorNamespace {
         void deleteVariable(const std::string& name);
         void askToDeleteVariable();
 
-        void clear();
+        void clear(bool shouldPrintConfirmation=true);
+        void writeDefinitions(std::ostream& destination) const;
     };
 }
